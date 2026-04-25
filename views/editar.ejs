@@ -1,133 +1,188 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Editar Empresa - Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Empresa - Portal STL</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
 </head>
-<body class="bg-slate-50 p-6 md:p-12">
-    <div class="max-w-4xl mx-auto">
-        
-        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex justify-between items-center shadow-sm">
-            <div class="text-sm">
-                <strong class="text-amber-800">A categoria do cliente não existe?</strong>
-                <p class="text-amber-600 text-xs">Crie e ela aparecerá logo abaixo.</p>
+<body class="bg-slate-50 min-h-screen">
+
+    <!-- HEADER ADMIN -->
+    <header class="bg-slate-900 text-white py-4 px-6 shadow-md sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <div class="text-xl font-black tracking-tight">
+                PORTAL<span class="text-amber-500">STL</span> <span class="text-slate-400 font-normal text-sm ml-2">| Painel de Controlo</span>
             </div>
-            <form action="/admin/categorias" method="POST" class="flex gap-2">
-                <input type="text" name="nome_categoria" placeholder="Nova Categoria..." class="px-3 py-2 rounded-lg border border-amber-300 text-sm focus:outline-none" required>
-                <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-amber-700">Criar</button>
-            </form>
+            <a href="/admin" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 border border-slate-700">
+                <i class="fas fa-arrow-left"></i> Voltar ao Painel
+            </a>
+        </div>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="max-w-4xl mx-auto px-4 py-10">
+        
+        <div class="mb-8">
+            <h1 class="text-3xl font-black text-slate-900">Editar Empresa</h1>
+            <p class="text-slate-500 mt-1">Atualize os dados de <strong class="text-slate-700"><%= empresa.nome %></strong> no portal.</p>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden p-8">
-            <div class="flex justify-between items-center mb-6 pb-4 border-b">
-                <h1 class="text-2xl font-bold">Editar: <%= empresa.nome %></h1>
-                <a href="/admin" class="text-slate-500 hover:text-amber-500"><i class="fas fa-arrow-left"></i> Voltar</a>
-            </div>
-
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-10">
             <form action="/admin/atualizar/<%= empresa.id %>" method="POST" enctype="multipart/form-data" class="space-y-6">
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Nome Comercial</label>
-                        <input type="text" name="nome" value="<%= empresa.nome %>" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Categoria</label>
-                        <select name="categoria_id" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3" required>
-                            <% categorias.forEach(cat => { %>
-                                <option value="<%= cat.id %>" <%= empresa.categoria_id == cat.id ? 'selected' : '' %>><%= cat.nome %></option>
-                            <% }) %>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Plano de Destaque</label>
-                        <select name="plano_id" id="planoSelect" class="w-full bg-white border border-amber-400 rounded-xl p-3 shadow-sm">
-                            <option value="1" <%= empresa.plano_id == 1 ? 'selected' : '' %>>Start (Grátis)</option>
-                            <option value="2" <%= empresa.plano_id == 2 ? 'selected' : '' %>>Plano 1 (Vitrine Premium)</option>
-                            <option value="3" <%= empresa.plano_id == 3 ? 'selected' : '' %>>Plano 2 (Patrocinado no Topo)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Status</label>
-                        <select name="status" class="w-full bg-slate-50 border rounded-xl p-3">
-                            <option value="ativo" <%= empresa.status == 'ativo' ? 'selected' : '' %>>Ativo</option>
-                            <option value="inativo" <%= empresa.status == 'inativo' ? 'selected' : '' %>>Inativo</option>
-                        </select>
+                <!-- BLOCO: DADOS PRINCIPAIS -->
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
+                        <i class="fas fa-info-circle text-amber-500"></i> Informações Principais
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">Nome Comercial *</label>
+                            <input type="text" name="nome" value="<%= empresa.nome %>" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">Categoria *</label>
+                            <select name="categoria_id" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition" required>
+                                <% categorias.forEach(cat => { %>
+                                    <option value="<%= cat.id %>" <%= cat.id === empresa.categoria_id ? 'selected' : '' %>><%= cat.nome %></option>
+                                <% }) %>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <!-- UPGRADE: GRID DE 3 COLUNAS COM O LINK MAPS -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">WhatsApp</label>
-                        <input type="text" name="whatsapp" value="<%= empresa.whatsapp || '' %>" class="w-full bg-slate-50 border rounded-xl p-3">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Endereço</label>
-                        <input type="text" name="endereco" value="<%= empresa.endereco || '' %>" class="w-full bg-slate-50 border rounded-xl p-3">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Link Google Maps</label>
-                        <input type="text" name="link_maps" value="<%= empresa.link_maps || '' %>" placeholder="https://maps.app.goo.gl/..." class="w-full bg-slate-50 border rounded-xl p-3 text-sm">
+                <!-- BLOCO: GESTÃO DO PLANO -->
+                <div class="bg-slate-50 p-5 rounded-xl border border-slate-100">
+                    <h3 class="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-sliders-h text-amber-500"></i> Visibilidade e Status
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Plano Atual</label>
+                            <select name="plano_id" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition font-medium text-slate-700">
+                                <option value="1" <%= empresa.plano_id === 1 ? 'selected' : '' %>>1. Gratuito (Básico)</option>
+                                <option value="2" <%= empresa.plano_id === 2 ? 'selected' : '' %>>2. Vitrine Premium</option>
+                                <option value="3" <%= empresa.plano_id === 3 ? 'selected' : '' %>>3. Patrocinado (Destaque)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Status no Portal</label>
+                            <select name="status" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition font-bold <%= empresa.status === 'ativo' ? 'text-green-600' : 'text-red-500' %>">
+                                <option value="ativo" <%= empresa.status === 'ativo' ? 'selected' : '' %>>🟢 Ativo (Online)</option>
+                                <option value="inativo" <%= empresa.status === 'inativo' ? 'selected' : '' %>>🔴 Inativo (Oculto)</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div><label class="block text-sm font-bold text-slate-700 mb-2">Site</label><input type="text" name="site" value="<%= empresa.site || '' %>" class="w-full bg-slate-50 border rounded-xl p-3"></div>
-                    <div><label class="block text-sm font-bold text-slate-700 mb-2">Instagram</label><input type="text" name="instagram" value="<%= empresa.instagram || '' %>" class="w-full bg-slate-50 border rounded-xl p-3"></div>
-                    <div><label class="block text-sm font-bold text-slate-700 mb-2">Facebook</label><input type="text" name="facebook" value="<%= empresa.facebook || '' %>" class="w-full bg-slate-50 border rounded-xl p-3"></div>
+                <!-- BLOCO: CONTATO E LOCALIZAÇÃO -->
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900 mt-8 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
+                        <i class="fas fa-map-marker-alt text-amber-500"></i> Contato e Localização
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">WhatsApp</label>
+                            <input type="text" name="whatsapp" value="<%= empresa.whatsapp || '' %>" placeholder="Ex: 35999999999" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">Site Oficial</label>
+                            <input type="text" name="site" value="<%= empresa.site || '' %>" placeholder="https://www..." class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">Endereço Físico</label>
+                            <input type="text" name="endereco" value="<%= empresa.endereco || '' %>" placeholder="Ex: Rua Direita, 10 - Centro" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">Link do Google Maps</label>
+                            <input type="url" name="link_maps" value="<%= empresa.link_maps || '' %>" placeholder="https://maps.app.goo.gl/..." class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition">
+                        </div>
+                    </div>
                 </div>
 
-                <!-- EXCLUSIVOS DOS PLANOS PREMIUM -->
-                <div id="premium-features" class="hidden space-y-6 pt-6 border-t border-slate-200">
-                    <h3 class="font-bold text-amber-600 mb-2"><i class="fas fa-crown"></i> Benefícios Premium</h3>
+                <!-- BLOCO: REDES SOCIAIS -->
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900 mt-8 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
+                        <i class="fas fa-hashtag text-amber-500"></i> Redes Sociais
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">Instagram (@)</label>
+                            <input type="text" name="instagram" value="<%= empresa.instagram || '' %>" placeholder="@suaempresa" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1">Facebook</label>
+                            <input type="text" name="facebook" value="<%= empresa.facebook || '' %>" placeholder="Link do perfil ou página" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BLOCO: MÍDIA E CONTEÚDO -->
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900 mt-8 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
+                        <i class="fas fa-camera text-amber-500"></i> Mídia e Conteúdo
+                    </h3>
                     
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Descrição Completa do Local</label>
-                        <textarea name="descricao" rows="4" placeholder="Escreva os diferenciais, serviços oferecidos e o que o cliente encontrará..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition"><%= locals.empresa && empresa.descricao ? empresa.descricao : '' %></textarea>
+                    <div class="mb-5">
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Descrição Completa</label>
+                        <textarea name="descricao" rows="4" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition resize-none"><%= empresa.descricao || '' %></textarea>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
+                    <div class="mb-5">
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Link de Vídeo (YouTube/Vimeo)</label>
+                        <input type="url" name="video_url" value="<%= empresa.video_url || '' %>" placeholder="https://www.youtube.com/watch?v=..." class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition">
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 border-dashed">
                             <label class="block text-sm font-bold text-slate-700 mb-2">Foto de Capa Principal</label>
-                            <input type="file" name="foto" accept="image/*" class="w-full bg-slate-50 border rounded-xl p-2">
                             <% if(empresa.imagem) { %>
-                                <p class="text-xs text-blue-600 mt-2"><i class="fas fa-check"></i> Imagem de capa salva.</p>
+                                <div class="mb-3 w-full h-32 rounded-lg overflow-hidden border border-slate-200 relative group">
+                                    <img src="<%= empresa.imagem %>" class="w-full h-full object-cover">
+                                    <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <span class="text-white text-xs font-bold">Imagem Atual</span>
+                                    </div>
+                                </div>
                             <% } %>
+                            <input type="file" name="foto" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 transition cursor-pointer">
+                            <p class="text-xs text-slate-400 mt-2">Escolher novo ficheiro substitui a imagem atual.</p>
                         </div>
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Vídeo Promocional (Link do YouTube)</label>
-                            <input type="text" name="video_url" value="<%= empresa.video_url || '' %>" placeholder="https://www.youtube.com/watch?v=..." class="w-full bg-slate-50 border rounded-xl p-3 text-sm">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Galeria de Imagens (Sobrescreve as atuais)</label>
-                        <input type="file" name="galeria" accept="image/*" multiple class="w-full bg-amber-50 border border-amber-200 rounded-xl p-2 text-amber-800">
-                        <p class="text-xs text-slate-500 mt-2"><i class="fas fa-info-circle"></i> Segure o botão CTRL para selecionar até 5 fotos.</p>
                         
-                        <% if(empresa.galeria) { %>
-                            <p class="text-xs text-blue-600 mt-2"><i class="fas fa-check"></i> Galeria com imagens salva.</p>
-                        <% } %>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 border-dashed">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Galeria de Fotos (Até 5)</label>
+                            <input type="file" name="galeria" accept="image/*" multiple class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-slate-200 file:text-slate-700 hover:file:bg-slate-300 transition cursor-pointer">
+                            <p class="text-xs text-slate-400 mt-2">Segure CTRL (ou CMD) para selecionar várias imagens de uma vez.</p>
+                        </div>
                     </div>
                 </div>
 
-                <button type="submit" class="w-full bg-slate-900 hover:bg-amber-500 text-white py-4 rounded-xl font-bold transition mt-8">Salvar Alterações</button>
+                <!-- 🚨 ZONA DE AÇÃO (BOTOÕES) -->
+                <div class="mt-10 pt-6 border-t border-slate-200 flex flex-col gap-3">
+                    
+                    <!-- Botão de Salvar -->
+                    <button type="submit" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-4 rounded-xl transition shadow-md text-lg flex justify-center items-center gap-2">
+                        <i class="fas fa-save"></i> Salvar Alterações
+                    </button>
+
+                    <!-- Botão de Autodestruição -->
+                    <a href="/admin/excluir/<%= empresa.id %>" 
+                       onclick="return confirm('ALERTA VERMELHO! 🚨 Tem certeza absoluta que deseja excluir a empresa <%= empresa.nome %>? Essa ação não tem volta e apagará todos os dados do banco!')" 
+                       class="block w-full bg-red-50 text-red-600 hover:bg-red-600 hover:text-white font-bold py-3.5 rounded-xl border border-red-200 hover:border-red-600 transition duration-300 text-center shadow-sm">
+                        <i class="fas fa-trash-alt mr-2"></i> Excluir Empresa Definitivamente
+                    </a>
+                    
+                </div>
             </form>
         </div>
-    </div>
+    </main>
 
-    <script>
-        document.getElementById('planoSelect').addEventListener('change', function() {
-            const premiumBox = document.getElementById('premium-features');
-            premiumBox.style.display = (this.value === '2' || this.value === '3') ? 'block' : 'none';
-        });
-        document.getElementById('planoSelect').dispatchEvent(new Event('change'));
-    </script>
 </body>
 </html>
