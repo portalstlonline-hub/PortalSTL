@@ -80,7 +80,8 @@
                     </p>
                 </section>
 
-                <% if(empresa.galeria) { 
+                <!-- EXCLUSIVO PARA VITRINE PREMIUM OU SUPERIOR (plano_id >= 2) -->
+                <% if(empresa.plano_id >= 2 && empresa.galeria) { 
                     const imagens = JSON.parse(empresa.galeria); 
                     if(imagens.length > 0) { %>
                     <section>
@@ -88,7 +89,7 @@
                             <i class="fas fa-th-large text-amber-500"></i> Galeria de Fotos
                         </h2>
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            <% imagens.forEach(img => { %>
+                            <% imagens.slice(0, 6).forEach(img => { %>
                                 <div class="aspect-square rounded-2xl overflow-hidden shadow-sm hover:scale-[1.02] transition duration-300 cursor-pointer">
                                     <img src="<%= img %>" class="w-full h-full object-cover">
                                 </div>
