@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- SEO DINÂMICO -->
     <title><%= empresa.nome %> - Portal São Thomé das Letras</title>
     <meta name="description" content="<%= empresa.descricao ? empresa.descricao.substring(0, 160) : 'Confira os detalhes de ' + empresa.nome + ' em São Thomé das Letras.' %>">
     
@@ -13,7 +12,6 @@
     <meta property="og:image" content="<%= empresa.imagem || '/img/default-share.jpg' %>">
     <meta property="og:type" content="website">
 
-    <!-- 🕵️‍♂️ GOOGLE ANALYTICS 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-BDTY71XR8Q"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -56,7 +54,7 @@
                 <h1 class="text-3xl md:text-5xl font-black text-white drop-shadow-lg"><%= empresa.nome %></h1>
                 <div class="flex flex-wrap gap-3 mt-4">
                     <span class="bg-amber-500 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg">
-                        <%= empresa.categoria_nome || 'Local' %> 
+                        <%= empresa.categoria_id %>
                     </span>
                     <% if(empresa.plano_id === 3) { %>
                         <span class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full border border-white/30">
@@ -82,7 +80,6 @@
                     </p>
                 </section>
 
-                <!-- GALERIA OTIMIZADA PARA ATÉ 6 FOTOS -->
                 <% if(empresa.galeria) { 
                     const imagens = JSON.parse(empresa.galeria); 
                     if(imagens.length > 0) { %>
@@ -92,7 +89,7 @@
                         </h2>
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                             <% imagens.forEach(img => { %>
-                                <div class="aspect-square rounded-2xl overflow-hidden shadow-sm hover:scale-[1.02] transition duration-300 cursor-pointer border border-slate-100">
+                                <div class="aspect-square rounded-2xl overflow-hidden shadow-sm hover:scale-[1.02] transition duration-300 cursor-pointer">
                                     <img src="<%= img %>" class="w-full h-full object-cover">
                                 </div>
                             <% }) %>
