@@ -205,24 +205,3 @@ app.post('/admin/atualizar/:id', upload.fields([{ name: 'foto', maxCount: 1 }, {
 });
 
 app.listen(port, () => console.log(`🚀 Servidor na porta ${port}`));
-```
-
-### 💡 Dica para o Painel (`admin.ejs`)
-No seu arquivo `admin.ejs`, onde você lista as empresas e categorias, você deve adicionar os links de exclusão. Para evitar cliques por erro, recomendo usar um pequeno código de confirmação em JavaScript no botão:
-
-**Para Empresas:**
-```html
-<a href="/admin/excluir/<%= local.id %>" 
-   onclick="return confirm('Tem certeza que deseja apagar esta empresa? Esta ação não tem volta!')" 
-   class="text-red-500 hover:text-red-700">
-   <i class="fas fa-trash"></i> Excluir
-</a>
-```
-
-**Para Categorias:**
-```html
-<a href="/admin/categorias/excluir/<%= cat.id %>" 
-   onclick="return confirm('Apagar categoria? Isso pode afetar empresas cadastradas nela!')" 
-   class="text-red-500 hover:text-red-700">
-   <i class="fas fa-trash"></i> Excluir
-</a>
