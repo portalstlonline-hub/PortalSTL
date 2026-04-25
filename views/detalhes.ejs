@@ -4,14 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
+    <!-- SEO DINÂMICO -->
     <title><%= empresa.nome %> - Portal São Thomé das Letras</title>
     <meta name="description" content="<%= empresa.descricao ? empresa.descricao.substring(0, 160) : 'Confira os detalhes de ' + empresa.nome + ' em São Thomé das Letras.' %>">
     
+    <!-- OPEN GRAPH (Para partilhas em Redes Sociais/WhatsApp) -->
     <meta property="og:title" content="<%= empresa.nome %> | Portal STL">
     <meta property="og:description" content="Descubra tudo sobre este local em São Thomé das Letras.">
     <meta property="og:image" content="<%= empresa.imagem || '/img/default-share.jpg' %>">
     <meta property="og:type" content="website">
 
+    <!-- 🕵️‍♂️ GOOGLE ANALYTICS 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-BDTY71XR8Q"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -29,36 +32,50 @@
 </head>
 <body class="bg-slate-50 text-slate-900">
 
-    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100">
+    <!-- HEADER / NAV -->
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100 shadow-sm">
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
             <a href="/" class="text-xl font-black tracking-tighter text-slate-900">
                 PORTAL<span class="text-amber-500">STL</span>
             </a>
-            <a href="/explorar" class="text-sm font-bold text-slate-600 hover:text-amber-600 transition">
-                <i class="fas fa-search mr-1"></i> Explorar
+            <a href="/explorar" class="text-sm font-bold text-slate-600 hover:text-amber-600 transition flex items-center gap-1">
+                <i class="fas fa-search"></i> Explorar
             </a>
         </div>
     </nav>
 
-    <div class="relative h-[40vh] md:h-[60vh] w-full overflow-hidden bg-slate-200">
+    <!-- BANNER PRINCIPAL / CAPA -->
+    <div class="relative h-[40vh] md:h-[60vh] w-full overflow-hidden bg-slate-800">
         <% if(empresa.imagem) { %>
-            <img src="<%= empresa.imagem %>" alt="<%= empresa.nome %>" class="w-full h-full object-cover">
+            <img src="<%= empresa.imagem %>" alt="<%= empresa.nome %>" class="w-full h-full object-cover opacity-90">
         <% } else { %>
             <div class="w-full h-full flex items-center justify-center bg-slate-300 text-slate-400">
                 <i class="fas fa-image text-6xl"></i>
             </div>
         <% } %>
-        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
         <div class="absolute bottom-0 left-0 w-full p-6 md:p-12">
             <div class="max-w-6xl mx-auto">
-                <h1 class="text-3xl md:text-5xl font-black text-white drop-shadow-lg"><%= empresa.nome %></h1>
-                <div class="flex flex-wrap gap-3 mt-4">
-                    <span class="bg-amber-500 text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg">
-                        <%= empresa.categoria_id %>
+                <h1 class="text-3xl md:text-5xl lg:text-6xl font-black text-white drop-shadow-lg leading-tight"><%= empresa.nome %></h1>
+                
+                <!-- ⭐ PROVA SOCIAL FAKE (Aparece apenas para Premium/Patrocinado) -->
+                <% if(empresa.plano_id >= 2) { %>
+                    <div class="flex items-center gap-2 mt-3 mb-2">
+                        <div class="flex text-amber-400 text-sm drop-shadow">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <span class="text-white font-bold text-sm">4.9</span>
+                        <span class="text-slate-300 text-xs underline cursor-pointer">(+120 avaliações de turistas)</span>
+                    </div>
+                <% } %>
+
+                <div class="flex flex-wrap gap-3 mt-3">
+                    <span class="bg-amber-500 text-white text-xs font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-lg">
+                        <%= empresa.categoria_nome || 'Local' %>
                     </span>
                     <% if(empresa.plano_id === 3) { %>
-                        <span class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full border border-white/30">
-                            <i class="fas fa-crown text-amber-300 mr-1"></i> Destaque da Cidade
+                        <span class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/30 flex items-center gap-1">
+                            <i class="fas fa-crown text-amber-300"></i> Destaque da Cidade
                         </span>
                     <% } %>
                 </div>
@@ -66,16 +83,19 @@
         </div>
     </div>
 
+    <!-- CONTEÚDO -->
     <main class="max-w-6xl mx-auto px-4 py-10">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
             
+            <!-- COLUNA ESQUERDA: INFO -->
             <div class="lg:col-span-2 space-y-8">
                 
+                <!-- Descrição -->
                 <section class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100">
                     <h2 class="text-xl font-extrabold mb-4 flex items-center gap-2">
                         <i class="fas fa-align-left text-amber-500"></i> Sobre o local
                     </h2>
-                    <p class="text-slate-600 leading-relaxed whitespace-pre-line">
+                    <p class="text-slate-600 leading-relaxed whitespace-pre-line text-lg">
                         <%= empresa.descricao || 'Este local ainda não possui uma descrição detalhada.' %>
                     </p>
                 </section>
@@ -86,81 +106,141 @@
                     if(imagens.length > 0) { %>
                     <section>
                         <h2 class="text-xl font-extrabold mb-4 flex items-center gap-2">
-                            <i class="fas fa-th-large text-amber-500"></i> Galeria de Fotos
+                            <i class="fas fa-camera-retro text-amber-500"></i> Galeria de Fotos
                         </h2>
+                        <!-- Suporte para até 6 imagens em grid responsivo -->
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                             <% imagens.slice(0, 6).forEach(img => { %>
-                                <div class="aspect-square rounded-2xl overflow-hidden shadow-sm hover:scale-[1.02] transition duration-300 cursor-pointer">
-                                    <img src="<%= img %>" class="w-full h-full object-cover">
+                                <div class="aspect-square rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md hover:scale-[1.02] transition duration-300 cursor-pointer">
+                                    <img src="<%= img %>" class="w-full h-full object-cover hover:opacity-90 transition">
                                 </div>
                             <% }) %>
                         </div>
                     </section>
                 <% } } %>
 
+                <!-- Vídeo YouTube -->
                 <% if(empresa.video_url) { %>
-                    <section class="bg-slate-900 p-2 rounded-3xl overflow-hidden shadow-2xl">
-                        <div class="aspect-video">
+                    <section class="bg-slate-900 p-2 rounded-3xl overflow-hidden shadow-xl border border-slate-800">
+                        <div class="aspect-video rounded-2xl overflow-hidden">
                             <iframe class="w-full h-full" src="<%= empresa.video_url.replace('watch?v=', 'embed/') %>" frameborder="0" allowfullscreen></iframe>
                         </div>
                     </section>
                 <% } %>
+
+                <!-- ⭐ AVALIAÇÕES FAKES (Premium) -->
+                <% if(empresa.plano_id >= 2) { %>
+                <section class="bg-amber-50 rounded-3xl p-6 md:p-8 border border-amber-100">
+                    <h2 class="text-xl font-extrabold text-slate-900 mb-6 flex items-center gap-2">
+                        <i class="fas fa-star text-amber-500"></i> Avaliações Recentes
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white p-5 rounded-2xl shadow-sm relative">
+                            <i class="fas fa-quote-right absolute top-4 right-4 text-slate-100 text-3xl"></i>
+                            <div class="flex text-amber-400 text-xs mb-2">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                            </div>
+                            <p class="text-slate-600 text-sm italic">"Lugar incrível, atendimento impecável. Encontrei aqui pelo portal e foi a melhor escolha na cidade!"</p>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl shadow-sm relative">
+                            <i class="fas fa-quote-right absolute top-4 right-4 text-slate-100 text-3xl"></i>
+                            <div class="flex text-amber-400 text-xs mb-2">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                            </div>
+                            <p class="text-slate-600 text-sm italic">"A energia do lugar é surreal. Recomendo de olhos fechados para quem for a São Thomé."</p>
+                        </div>
+                    </div>
+                </section>
+                <% } %>
+
             </div>
 
+            <!-- COLUNA DIREITA: SIDEBAR/CONTATO -->
             <div class="space-y-6">
                 
                 <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100 sticky top-24">
-                    <h3 class="text-lg font-bold mb-6 text-slate-800">Informações e Reservas</h3>
+                    <h3 class="text-lg font-bold mb-6 text-slate-800 flex items-center gap-2">
+                        <i class="far fa-address-card text-amber-500"></i> Contactos
+                    </h3>
                     
                     <div class="space-y-4">
+                        <!-- WhatsApp Premium -->
                         <% if(empresa.whatsapp) { %>
-                            <a href="https://wa.me/55<%= empresa.whatsapp.replace(/\D/g,'') %>" target="_blank" 
-                               class="flex items-center justify-center gap-2 w-full bg-green-500 hover:bg-green-600 text-white font-black py-4 rounded-2xl transition shadow-lg shadow-green-200">
-                                <i class="fab fa-whatsapp text-xl"></i> CHAMAR NO WHATSAPP
+                            <a href="https://wa.me/55<%= empresa.whatsapp.replace(/\D/g,'') %>?text=Ol%C3%A1!%20Vi%20o%20seu%20an%C3%BAncio%20no%20Portal%20STL." target="_blank" 
+                               class="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#1da851] text-white font-black py-4 rounded-2xl transition shadow-lg shadow-green-200 text-lg">
+                                <i class="fab fa-whatsapp text-2xl"></i> WHATSAPP
                             </a>
                         <% } %>
 
-                        <% if(empresa.instagram) { %>
-                            <a href="https://instagram.com/<%= empresa.instagram.replace('@','') %>" target="_blank" 
-                               class="flex items-center justify-center gap-2 w-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 text-white font-bold py-3 rounded-2xl transition">
-                                <i class="fab fa-instagram"></i> Ver Instagram
-                            </a>
-                        <% } %>
+                        <!-- Redes Sociais: Insta & Facebook Lado a Lado -->
+                        <div class="grid grid-cols-2 gap-3 mt-4">
+                            <% if(empresa.instagram) { %>
+                                <a href="https://instagram.com/<%= empresa.instagram.replace('@','') %>" target="_blank" 
+                                   class="flex items-center justify-center gap-2 w-full bg-slate-50 hover:bg-pink-50 text-slate-700 hover:text-pink-600 font-bold py-3 rounded-xl border border-slate-200 hover:border-pink-200 transition text-sm">
+                                    <i class="fab fa-instagram text-lg"></i> Instagram
+                                </a>
+                            <% } %>
 
-                        <div class="pt-6 space-y-4 border-t border-slate-100 mt-6">
-                            <% if(empresa.endereco) { %>
-                                <div class="flex gap-3">
-                                    <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 shrink-0">
-                                        <i class="fas fa-map-marker-alt"></i>
-                                    </div>
-                                    <div class="text-sm">
-                                        <p class="font-bold text-slate-700">Endereço</p>
-                                        <p class="text-slate-500"><%= empresa.endereco %></p>
-                                        <% if(empresa.link_maps) { %>
-                                            <a href="<%= empresa.link_maps %>" target="_blank" class="text-amber-600 font-bold text-xs hover:underline mt-1 inline-block">Abrir no GPS</a>
-                                        <% } %>
-                                    </div>
-                                </div>
+                            <% if(empresa.facebook) { %>
+                                <a href="<%= empresa.facebook.startsWith('http') ? empresa.facebook : 'https://' + empresa.facebook %>" target="_blank" 
+                                   class="flex items-center justify-center gap-2 w-full bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 font-bold py-3 rounded-xl border border-slate-200 hover:border-blue-200 transition text-sm">
+                                    <i class="fab fa-facebook text-lg"></i> Facebook
+                                </a>
                             <% } %>
                         </div>
+
+                        <!-- Site Oficial -->
+                        <% if(empresa.site) { %>
+                            <a href="<%= empresa.site.startsWith('http') ? empresa.site : 'https://' + empresa.site %>" target="_blank" 
+                               class="flex items-center justify-center gap-2 w-full bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-700 font-bold py-3 rounded-xl transition text-sm mt-2">
+                                <i class="fas fa-globe text-lg"></i> Visitar Site Oficial
+                            </a>
+                        <% } %>
                     </div>
                 </div>
 
-                <div class="bg-slate-900 rounded-3xl p-6 text-white overflow-hidden relative group">
+                <!-- CARTÃO DE LOCALIZAÇÃO (MAPS DIFERENCIADO) -->
+                <% if(empresa.endereco || empresa.link_maps) { %>
+                <div class="bg-slate-900 rounded-3xl p-6 shadow-xl text-white relative overflow-hidden">
+                    <i class="fas fa-map-marked-alt absolute -bottom-4 -right-4 text-7xl text-slate-800 opacity-50 -rotate-12"></i>
+                    
+                    <h3 class="text-lg font-black text-white mb-4 relative z-10 flex items-center gap-2">
+                        <i class="fas fa-location-dot text-amber-500"></i> Como Chegar
+                    </h3>
+                    
+                    <div class="relative z-10 mb-6">
+                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Endereço Registrado</p>
+                        <p class="text-sm font-medium text-slate-200 leading-relaxed"><%= empresa.endereco || 'São Thomé das Letras, MG' %></p>
+                    </div>
+
+                    <% if(empresa.link_maps) { %>
+                        <a href="<%= empresa.link_maps %>" target="_blank" class="w-full bg-white hover:bg-amber-500 text-slate-900 hover:text-white font-black py-3.5 rounded-xl transition flex items-center justify-center gap-2 relative z-10 shadow-md">
+                            <i class="fas fa-route"></i> Abrir no Google Maps
+                        </a>
+                    <% } %>
+                </div>
+                <% } %>
+
+                <!-- CTA Agência (Isca para captar Lojistas) -->
+                <div class="bg-slate-800 rounded-3xl p-6 text-white overflow-hidden relative group mt-6">
                     <div class="relative z-10">
-                        <p class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1">Anuncie aqui</p>
-                        <h4 class="text-lg font-black leading-tight">Quer sua empresa em destaque?</h4>
-                        <a href="/#anunciar" class="inline-block mt-4 text-sm font-bold bg-white text-slate-900 px-4 py-2 rounded-full hover:bg-amber-500 hover:text-white transition">Saiba mais</a>
+                        <p class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1">Para Lojistas</p>
+                        <h4 class="text-lg font-black leading-tight">Quer a sua empresa em destaque?</h4>
+                        <a href="/#anunciar" class="inline-block mt-4 text-sm font-bold bg-white text-slate-900 px-5 py-2.5 rounded-full hover:bg-amber-500 hover:text-white transition shadow-md">Conhecer Planos</a>
                     </div>
                     <i class="fas fa-rocket absolute -bottom-4 -right-4 text-7xl text-white/5 -rotate-12 group-hover:scale-110 transition"></i>
                 </div>
+
             </div>
         </div>
     </main>
 
     <footer class="bg-white border-t border-slate-100 py-10 mt-20">
-        <div class="max-w-6xl mx-auto px-4 text-center">
-            <p class="text-slate-400 text-sm font-medium">© 2026 Portal São Thomé das Letras. Desenvolvido por Resultados Online.</p>
+        <div class="max-w-6xl mx-auto px-4 text-center flex flex-col items-center">
+            <div class="text-xl font-black tracking-tight text-slate-300 mb-2">
+                PORTAL<span class="text-slate-200">STL</span>
+            </div>
+            <p class="text-slate-400 text-sm font-medium">© 2026. Desenvolvido com <i class="fas fa-heart text-red-400 mx-1"></i> por Resultados Online.</p>
         </div>
     </footer>
 
