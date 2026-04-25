@@ -4,12 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- SEO E META TAGS -->
     <title>Explorar Empresas e Serviços - Portal STL</title>
     <meta name="description" content="Explore e encontre as melhores pousadas, restaurantes, passeios e serviços na cidade mágica de São Thomé das Letras. O guia comercial completo.">
     <meta name="author" content="Resultados Online">
     
-    <!-- 🕵️‍♂️ GOOGLE ANALYTICS 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-BDTY71XR8Q"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -18,7 +16,6 @@
       gtag('config', 'G-BDTY71XR8Q');
     </script>
 
-    <!-- ESTILOS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -31,7 +28,6 @@
 </head>
 <body class="bg-slate-50 flex flex-col min-h-screen">
     
-    <!-- HEADER -->
     <header class="w-full bg-white z-50 border-b border-slate-200 sticky top-0 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
             <a href="/" class="text-2xl font-black tracking-tight text-slate-900">
@@ -45,7 +41,6 @@
 
     <main class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
         
-        <!-- FEEDBACK DE BUSCA -->
         <% if (buscaAtual) { %>
             <div class="mb-8 border-b border-slate-200 pb-4">
                 <h2 class="text-2xl font-bold text-slate-800">Resultados para: <span class="text-amber-500">"<%= buscaAtual %>"</span></h2>
@@ -53,7 +48,6 @@
             </div>
         <% } %>
 
-        <!-- TABS DE CATEGORIAS -->
         <div class="flex overflow-x-auto gap-3 pb-4 mb-8 no-scrollbar border-b border-slate-200">
             <a href="/explorar" class="flex-shrink-0 <%= !categoriaAtual && !buscaAtual ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-slate-600 border-slate-200 hover:border-amber-500' %> border px-6 py-2.5 rounded-full text-sm font-bold transition shadow-sm">
                 Todas as Categorias
@@ -65,46 +59,40 @@
             <% }) %>
         </div>
 
-        <!-- GRID DE EMPRESAS -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <% if (locais.length > 0) { %>
                 <% locais.forEach(local => { %>
                     <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 flex flex-col hover:shadow-xl transition duration-300 relative group <%= local.plano_id == 1 ? 'self-start' : 'h-full' %>">
                         
-                        <!-- BADGE PATROCINADO -->
                         <% if (local.plano_id == 3) { %>
                             <div class="absolute top-3 left-3 z-10 bg-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wide flex items-center gap-1 shadow-md">
                                 <i class="fas fa-crown"></i> Patrocinado
                             </div>
                         <% } %>
                         
-                        <!-- IMAGEM (Apenas Planos Premium+) -->
                         <% if (local.plano_id >= 2) { %>
-                        <div class="h-48 w-full bg-slate-100 relative overflow-hidden flex-shrink-0">
+                        <div class="h-48 w-full bg-slate-900 relative overflow-hidden flex-shrink-0 flex items-center justify-center">
                             <% if (local.imagem) { %>
-                                <img src="<%= local.imagem %>" alt="<%= local.nome %>" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <img src="<%= local.imagem %>" alt="<%= local.nome %>" class="w-full h-full object-contain group-hover:scale-105 transition duration-500">
                             <% } else { %>
-                                <div class="w-full h-full flex flex-col items-center justify-center text-slate-300">
+                                <div class="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-100">
                                     <i class="fas fa-camera text-4xl mb-2"></i>
                                 </div>
                             <% } %>
                         </div>
                         <% } %>
                         
-                        <!-- DADOS DO LOCAL -->
                         <div class="p-6 flex flex-col flex-grow">
                             <h3 class="font-extrabold text-xl text-slate-900 leading-tight"><%= local.nome %></h3>
                             <p class="text-slate-500 text-sm mt-2 line-clamp-2 min-h-[40px]">
                                 <i class="fas fa-map-marker-alt text-amber-500 mr-1"></i> <%= local.endereco || 'Endereço não informado' %>
                             </p>
                             
-                            <!-- ÍCONES SOCIAIS / MAPA -->
                             <div class="flex gap-4 mt-4 text-slate-400 items-center">
                                 <a href="<%= local.link_maps ? local.link_maps : 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(local.nome + ' São Thomé das Letras') %>" target="_blank" class="hover:text-amber-500 transition" title="Ver no Mapa">
                                     <i class="fas fa-map-marked-alt text-lg"></i>
                                 </a>
 
-                                <!-- WhatsApp para Gratuitos aparece pequeno aqui se existir -->
                                 <% if(local.whatsapp && local.plano_id == 1) { %>
                                     <a href="https://wa.me/55<%= local.whatsapp.replace(/\D/g,'') %>?text=Ol%C3%A1!%20Vi%20o%20seu%20an%C3%BAncio%20no%20Portal%20STL." target="_blank" class="text-[#25D366] hover:text-[#128C7E] transition" title="WhatsApp"><i class="fab fa-whatsapp text-xl"></i></a>
                                 <% } %>
@@ -122,11 +110,10 @@
                                 <% } %>
                             </div>
 
-                            <!-- BOTÕES DE CONVERSÃO (Apenas Planos Premium+) -->
                             <% if (local.plano_id >= 2) { %>
                             <div class="mt-auto pt-6 flex flex-col gap-3">
                                 <a href="/local/<%= local.slug %>" class="w-full bg-slate-900 text-white font-bold py-3 rounded-xl text-sm shadow-sm hover:bg-amber-500 hover:text-slate-900 transition flex items-center justify-center gap-2">
-                                    <i class="fas fa-plus-circle text-lg"></i> Detalhes
+                                    <i class="fas fa-plus-circle text-lg"></i> + Detalhes
                                 </a>
 
                                 <% if(local.whatsapp) { %>
@@ -136,7 +123,6 @@
                                 <% } %>
                             </div>
                             <% } else { %>
-                                <!-- Para o plano gratuito, um botão simples levando aos detalhes -->
                                 <div class="mt-auto pt-6 flex flex-col gap-3">
                                     <a href="/local/<%= local.slug %>" class="w-full bg-slate-100 text-slate-600 font-bold py-2.5 rounded-xl text-sm hover:bg-slate-200 transition flex items-center justify-center gap-2 border border-slate-200">
                                         Ver Empresa
@@ -147,7 +133,6 @@
                     </div>
                 <% }) %>
             <% } else { %>
-                <!-- MENSAGEM DE NENHUM RESULTADO -->
                 <div class="col-span-full py-24 flex flex-col items-center text-center bg-white rounded-3xl border border-slate-100 shadow-sm">
                     <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
                         <i class="fas fa-search text-4xl text-slate-300"></i>
@@ -160,7 +145,6 @@
         </div>
     </main>
 
-    <!-- FOOTER SIMPLIFICADO -->
     <footer class="bg-white border-t border-slate-200 py-8 mt-auto">
         <div class="max-w-7xl mx-auto px-4 text-center">
             <p class="text-slate-400 text-sm font-medium">© 2026 Portal STL. Uma iniciativa <strong class="text-slate-600">Resultados Online</strong>.</p>
