@@ -1,237 +1,44 @@
 <!DOCTYPE html>
-<html lang="pt-PT" class="scroll-smooth">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= empresa.nome %> - Portal STL</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-    </style>
+    
+    <title><%= empresa.nome %> - Portal São Thomé das Letras</title>
+    
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BDTY71XR8Q"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-BDTY71XR8Q');
+    </script>
 </head>
-<body class="bg-slate-50 flex flex-col min-h-screen">
+<body>
 
-    <% 
-        // Lógica para embutir Vídeo do YouTube
-        let embedUrl = null;
-        if (empresa.video_url) {
-            let videoId = '';
-            if (empresa.video_url.includes('v=')) videoId = empresa.video_url.split('v=')[1].split('&')[0];
-            else if (empresa.video_url.includes('youtu.be/')) videoId = empresa.video_url.split('youtu.be/')[1].split('?')[0];
-            if (videoId) embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0`;
-        }
-
-        // Lógica para a Galeria
-        let galeria = [];
-        if (empresa.galeria) {
-            try { galeria = JSON.parse(empresa.galeria); } catch(e) {}
-        }
-    %>
-
-    <header class="w-full bg-white z-50 border-b border-slate-200 sticky top-0 shadow-sm">
-        <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-            <a href="/" class="text-2xl font-black tracking-tight text-slate-900">
-                PORTAL<span class="text-amber-500">STL</span>
-            </a>
-            <a href="/explorar" class="text-sm font-bold text-slate-500 hover:text-amber-500 transition flex items-center gap-2">
-                <i class="fas fa-arrow-left"></i> Voltar
-            </a>
-        </div>
+    <header>
+        <a href="/">Voltar para a Home</a>
     </header>
 
-    <main class="flex-grow pb-20">
-        <!-- CAPA PREMIUM -->
-        <div class="w-full h-64 md:h-96 bg-zinc-900 relative">
-            <% if (empresa.imagem) { %>
-                <img src="<%= empresa.imagem %>" alt="Capa de <%= empresa.nome %>" class="w-full h-full object-cover opacity-80 cursor-zoom-in" onclick="openGalleryModal('<%= empresa.imagem %>')">
-            <% } else { %>
-                <div class="w-full h-full flex flex-col items-center justify-center text-zinc-700">
-                    <i class="fas fa-image text-6xl mb-4 opacity-50"></i>
-                    <p class="font-medium">Sem imagem de capa</p>
-                </div>
-            <% } %>
-            
-            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none"></div>
-            
-            <div class="absolute bottom-0 left-0 w-full pointer-events-none">
-                <div class="max-w-4xl mx-auto px-4 pb-8">
-                    <% if (empresa.plano_id === 3) { %>
-                        <span class="inline-block bg-amber-500 text-white text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest mb-3 shadow-lg">
-                            <i class="fas fa-crown mr-1"></i> Patrocinado
-                        </span>
-                    <% } %>
-                    <h1 class="text-4xl md:text-5xl font-black text-white drop-shadow-md"><%= empresa.nome %></h1>
-                    <p class="text-zinc-300 mt-2 flex items-center gap-2 font-medium">
-                        <i class="fas fa-map-marker-alt text-amber-500"></i> <%= empresa.endereco || 'Endereço não informado' %>
-                    </p>
-                </div>
-            </div>
+    <main class="detalhes-empresa">
+        <h1><%= empresa.nome %></h1>
+        <p class="categoria">Categoria: <%= empresa.categoria %></p>
+        
+        <div class="informacoes">
+            <p><strong>Endereço:</strong> <%= empresa.endereco %></p>
+            <p><strong>Telefone:</strong> <%= empresa.telefone %></p>
+            <p><strong>Descrição:</strong> <%= empresa.descricao %></p>
         </div>
-
-        <div class="max-w-4xl mx-auto px-4 mt-8 grid grid-cols-1 md:grid-cols-3 gap-8">
-            
-            <div class="md:col-span-2 space-y-8">
-                <!-- SOBRE O LOCAL -->
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
-                    <h2 class="text-2xl font-bold text-slate-900 mb-4">Sobre o Local</h2>
-                    <div class="text-slate-600 leading-relaxed text-lg whitespace-pre-line">
-                        <% if (empresa.descricao && empresa.descricao.trim() !== '') { %>
-                            <%= empresa.descricao %>
-                        <% } else { %>
-                            Bem-vindo(a) à página oficial de <strong><%= empresa.nome %></strong> no Portal STL. 
-                            Este é um parceiro verificado do nosso guia comercial. Entre em contato diretamente através dos botões nesta página para garantir o seu atendimento ou reserva de forma rápida e segura.
-                        <% } %>
-                    </div>
-                </div>
-
-                <!-- GALERIA E VÍDEO -->
-                <% if (galeria.length > 0 || embedUrl) { %>
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
-                    <h2 class="text-2xl font-bold text-slate-900 mb-6">Galeria e Vídeo</h2>
-                    
-                    <% if (embedUrl) { %>
-                        <div class="w-full bg-slate-100 rounded-2xl overflow-hidden mb-6 shadow-inner aspect-video">
-                            <iframe src="<%= embedUrl %>" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                        </div>
-                    <% } %>
-
-                    <% if (galeria.length > 0) { %>
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            <% galeria.forEach(img => { %>
-                                <img src="<%= img %>" alt="Galeria" 
-                                     onclick="openGalleryModal('<%= img %>')"
-                                     class="w-full h-32 md:h-40 object-cover rounded-xl shadow-sm hover:scale-105 transition duration-300 border border-slate-100 cursor-zoom-in">
-                            <% }) %>
-                        </div>
-                    <% } %>
-                </div>
-                <% } %>
-
-                <!-- AVALIAÇÕES E MAPA -->
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-2xl font-bold text-slate-900">Avaliações e Rota</h2>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Google" class="w-6 h-6 opacity-80">
-                    </div>
-
-                    <div class="flex flex-col md:flex-row items-center gap-6 mb-6 p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                        <div class="text-center md:text-left">
-                            <span class="text-6xl font-black text-slate-900 tracking-tighter">4.8</span>
-                        </div>
-                        <div class="text-center md:text-left">
-                            <div class="flex text-amber-400 text-2xl mb-1 justify-center md:justify-start">
-                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-                            </div>
-                            <p class="text-slate-500 text-sm font-medium">Mais de 100 avaliações no Google Maps</p>
-                        </div>
-                    </div>
-
-                    <a href="<%= empresa.link_maps ? empresa.link_maps : 'https://www.google.com/maps/search/' + encodeURIComponent(empresa.nome + ' São Thomé das Letras') %>" target="_blank" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold py-4 rounded-xl transition flex items-center justify-center gap-2 shadow-sm border border-blue-100">
-                        <i class="fas fa-map-marked-alt text-xl"></i> Traçar Rota no Google Maps
-                    </a>
-                </div>
-            </div>
-
-            <div class="space-y-6">
-                <!-- CONTATOS RÁPIDOS -->
-                <div class="bg-white p-6 rounded-3xl shadow-lg border-t-4 border-amber-500 sticky top-24">
-                    <h3 class="text-lg font-bold text-slate-900 mb-6 text-center">Fale com o estabelecimento</h3>
-                    
-                    <% if (empresa.whatsapp) { %>
-                        <a href="https://wa.me/55<%= empresa.whatsapp.replace(/\D/g,'') %>?text=Ol%C3%A1!%20Vi%20o%20seu%20an%C3%BAncio%20no%20Portal%20STL%20e%20gostaria%20de%20mais%20informa%C3%A7%C3%B5es." target="_blank" class="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-4 rounded-xl shadow-md transition flex items-center justify-center gap-2 mb-4">
-                            <i class="fab fa-whatsapp text-2xl"></i> Enviar Mensagem
-                        </a>
-                    <% } %>
-
-                    <div class="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-slate-100">
-                        <% if (empresa.instagram) { %>
-                            <a href="<%= empresa.instagram.startsWith('http') ? empresa.instagram : 'https://' + empresa.instagram %>" target="_blank" class="flex flex-col items-center p-2 bg-pink-50 hover:bg-pink-100 text-pink-600 rounded-lg transition">
-                                <i class="fab fa-instagram text-xl mb-1"></i> <span class="text-[10px] font-bold">Insta</span>
-                            </a>
-                        <% } %>
-                        <% if (empresa.facebook) { %>
-                            <a href="<%= empresa.facebook.startsWith('http') ? empresa.facebook : 'https://' + empresa.facebook %>" target="_blank" class="flex flex-col items-center p-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition">
-                                <i class="fab fa-facebook text-xl mb-1"></i> <span class="text-[10px] font-bold">Face</span>
-                            </a>
-                        <% } %>
-                        <% if (empresa.site) { %>
-                            <a href="<%= empresa.site.startsWith('http') ? empresa.site : 'https://' + empresa.site %>" target="_blank" class="flex flex-col items-center p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition">
-                                <i class="fas fa-globe text-xl mb-1"></i> <span class="text-[10px] font-bold">Site</span>
-                            </a>
-                        <% } %>
-                    </div>
-                </div>
-            </div>
-
-        </div>
+        
+        <a href="https://wa.me/<%= empresa.whatsapp %>" class="btn-whatsapp">Entrar em Contato</a>
     </main>
 
-    <!-- MODAL DE ZOOM DA GALERIA -->
-    <div id="galleryModal" class="fixed inset-0 z-[100] hidden bg-black/95 flex items-center justify-center p-4 md:p-10 animate-fade-in" onclick="closeGalleryModal()">
-        <button class="absolute top-6 right-6 text-white text-4xl hover:text-amber-500 transition focus:outline-none">
-            <i class="fas fa-times"></i>
-        </button>
-        <img id="modalImage" src="" class="max-w-full max-h-full rounded-lg shadow-2xl object-contain transform transition duration-300 scale-95" onclick="event.stopPropagation()">
-    </div>
-
-    <footer class="bg-black border-t border-zinc-900 py-6 mt-auto">
-        <div class="max-w-4xl mx-auto px-4 text-center">
-            <p class="text-zinc-500 text-xs font-medium">
-                © 2026 Portal STL. <a href="/#anunciar" class="hover:text-amber-500 transition">Anuncie seu negócio aqui.</a>
-            </p>
-        </div>
+    <footer>
+        <p>&copy; 2026 Portal São Thomé das Letras. Desenvolvido por Resultados Online.</p>
     </footer>
-
-    <!-- LÓGICA DO ZOOM -->
-    <script>
-        function openGalleryModal(src) {
-            const modal = document.getElementById('galleryModal');
-            const img = document.getElementById('modalImage');
-            
-            img.src = src;
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            
-            // Pequeno delay para a animação de escala funcionar
-            setTimeout(() => {
-                img.classList.remove('scale-95');
-                img.classList.add('scale-100');
-            }, 10);
-            
-            document.body.style.overflow = 'hidden'; // Trava o scroll do fundo
-        }
-
-        function closeGalleryModal() {
-            const modal = document.getElementById('galleryModal');
-            const img = document.getElementById('modalImage');
-            
-            img.classList.remove('scale-100');
-            img.classList.add('scale-95');
-            
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-                document.body.style.overflow = 'auto'; // Destrava o scroll
-            }, 200);
-        }
-
-        // Fechar ao apertar ESC
-        document.addEventListener('keydown', function(e) {
-            if (e.key === "Escape") closeGalleryModal();
-        });
-    </script>
-
-    <style>
-        .animate-fade-in {
-            animation: fadeIn 0.2s ease-out forwards;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-    </style>
 
 </body>
 </html>
