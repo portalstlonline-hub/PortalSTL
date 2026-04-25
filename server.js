@@ -43,7 +43,11 @@ app.get('/', async (req, res) => {
     try {
         const [categorias] = await db.promise().execute('SELECT * FROM categorias ORDER BY nome ASC');
         const [patrocinados] = await db.promise().execute('SELECT * FROM empresas WHERE status = "ativo" AND plano_id = 3 ORDER BY RAND() LIMIT 3');
-        res.render('index', { title: 'Portal STL', categorias, patrocinados, sucesso: req.query.sucesso });
+        
+        // CORREÇÃO DO BUG FANTASMA: Agora só é verdadeiro se a palavra for exatamente "true"
+        const mostrarSucesso = req.query.sucesso === 'true';
+        
+        res.render('index', { title: 'Portal STL', categorias, patrocinados, sucesso: mostrarSucesso });
     } catch (err) { 
         console.error('Erro na Home:', err);
         res.status(500).send('Erro interno'); 
@@ -55,9 +59,23 @@ app.post('/contato', async (req, res) => {
         const { nome, categoria_id, whatsapp, endereco, link_maps, site, facebook, instagram } = req.body;
         const slug = (nome || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
         const query = `INSERT INTO empresas (categoria_id, plano_id, nome, slug, endereco, link_maps, whatsapp, site, facebook, instagram, status) VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, 'inativo')`;
-        await db.promise().execute(query, [categoria_id, nome, slug, endereco, link_maps || null, whatsapp, site, facebook, instagram]);
+        
+        // VACINA APLICADA: Tudo o que não vier do form vira "null" em vez de crashar o MySQL
+        await db.promise().execute(query, [
+            categoria_id, 
+            nome, 
+            slug, 
+            endereco || null, 
+            link_maps || null, 
+            whatsapp || null, 
+            site || null, 
+            facebook || null, 
+            instagram || null
+        ]);
+        
         res.redirect('/?sucesso=true#anunciar');
     } catch (err) { 
+        console.error('Erro ao salvar formulário:', err);
         res.redirect('/?sucesso=false#anunciar'); 
     }
 });
@@ -84,7 +102,6 @@ app.get('/explorar', async (req, res) => {
             params.push(termo, termo, termo, termo); 
         }
         
-        // A MÁGICA ACONTECE AQUI: Ordena por plano, e depois mistura tudo!
         queryEmpresas += ' ORDER BY e.plano_id DESC, RAND()';
         
         const [locais] = await db.promise().execute(queryEmpresas, params);
@@ -108,46 +125,48 @@ app.get('/local/:slug', async (req, res) => {
 app.get('/planos', (req, res) => { res.render('vendas-lojista'); });
 
 // ==========================================
-// 🔒 MIDDLEWARE DE SEGURANÇA (CADEADO DO ADMIN)
+// 🔒 MIDDLEWARE DE SEGURANÇA BLINDADO
 // ==========================================
 const protegerAdmin = (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    
-    if (!authHeader) {
-        res.setHeader('WWW-Authenticate', 'Basic realm="Acesso Restrito - Portal STL"');
-        return res.status(401).send('Acesso Negado. Área restrita da Resultados Online.');
-    }
+    try {
+        const authHeader = req.headers.authorization;
+        
+        if (!authHeader) {
+            res.setHeader('WWW-Authenticate', 'Basic realm="Acesso Restrito - Portal STL"');
+            return res.status(401).send('Acesso Negado. Área restrita da Resultados Online.');
+        }
 
-    // Decodifica a senha que o navegador envia
-    const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
-    const usuario = auth[0];
-    const senha = auth[1];
+        const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
+        const usuario = auth[0];
+        const senha = auth[1];
 
-    // ⚠️ ALERTA CEO: Troque 'daniel' e 'senha123' pelas suas credenciais reais!
-    if (usuario === 'daniel' && senha === 'senha123') {
-        next(); // Senha correta, a porta abre!
-    } else {
-        res.setHeader('WWW-Authenticate', 'Basic realm="Acesso Restrito - Portal STL"');
-        return res.status(401).send('Credenciais inválidas. Intruso bloqueado.');
+        // ⚠️ Troque 'daniel' e 'senha123' pelas suas credenciais reais!
+        if (usuario === 'daniel' && senha === 'senha123') {
+            next(); 
+        } else {
+            res.setHeader('WWW-Authenticate', 'Basic realm="Acesso Restrito - Portal STL"');
+            return res.status(401).send('Credenciais inválidas.');
+        }
+    } catch (error) {
+        console.error('Erro na segurança:', error);
+        res.status(500).send('Erro interno de autenticação.');
     }
 };
 
-// Ativa o cadeado para QUALQUER página que comece com /admin
 app.use('/admin', protegerAdmin);
 
 // ==========================================
-// ROTAS DO ADMIN (COM AS NOVAS CATEGORIAS)
+// ROTAS DO ADMIN
 // ==========================================
 
 app.get('/admin', async (req, res) => {
     try {
         const [empresas] = await db.promise().execute(`SELECT empresas.*, categorias.nome as categoria_nome FROM empresas LEFT JOIN categorias ON empresas.categoria_id = categorias.id ORDER BY empresas.id DESC`);
-        // Busca as categorias para a aba SEO
         const [categoriasLista] = await db.promise().execute('SELECT * FROM categorias ORDER BY nome ASC');
         res.render('admin', { empresas, categoriasLista });
     } catch (err) {
         console.error('Erro no Admin:', err);
-        res.status(500).send('Erro interno');
+        res.status(500).send('Erro interno no Painel de Controle');
     }
 });
 
@@ -157,7 +176,6 @@ app.post('/admin/categorias/atualizar/:id', async (req, res) => {
         await db.promise().execute('UPDATE categorias SET nome = ?, palavras_chave = ? WHERE id = ?', [nome, palavras_chave || null, req.params.id]);
         res.redirect('/admin');
     } catch (err) {
-        console.error('Erro ao atualizar categoria:', err);
         res.status(500).send('Erro ao atualizar categoria');
     }
 });
@@ -193,9 +211,10 @@ app.post('/admin/nova', upload.fields([{ name: 'foto', maxCount: 1 }, { name: 'g
             galeriaJson = JSON.stringify(req.files['galeria'].map(f => `/uploads/${f.filename}`));
         }
         const query = `INSERT INTO empresas (categoria_id, plano_id, nome, slug, descricao, endereco, link_maps, whatsapp, site, facebook, instagram, imagem, video_url, galeria, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-        await db.promise().execute(query, [categoria_id, plano_id, nome, slug, descricao || null, endereco, link_maps || null, whatsapp, site, facebook, instagram, imagemUrl, video_url || null, galeriaJson, status]);
+        await db.promise().execute(query, [categoria_id, plano_id, nome, slug, descricao || null, endereco || null, link_maps || null, whatsapp || null, site || null, facebook || null, instagram || null, imagemUrl, video_url || null, galeriaJson, status]);
         res.redirect('/admin');
     } catch (err) { 
+        console.error('Erro em Nova Empresa:', err);
         res.status(500).send('Erro ao salvar.'); 
     }
 });
@@ -214,7 +233,7 @@ app.post('/admin/atualizar/:id', upload.fields([{ name: 'foto', maxCount: 1 }, {
     try {
         const { nome, categoria_id, descricao, endereco, link_maps, whatsapp, site, facebook, instagram, plano_id, status, video_url } = req.body;
         let query = 'UPDATE empresas SET categoria_id=?, nome=?, descricao=?, endereco=?, link_maps=?, whatsapp=?, site=?, facebook=?, instagram=?, plano_id=?, status=?, video_url=?';
-        let params = [categoria_id, nome, descricao || null, endereco, link_maps || null, whatsapp, site, facebook, instagram, plano_id, status, video_url || null];
+        let params = [categoria_id, nome, descricao || null, endereco || null, link_maps || null, whatsapp || null, site || null, facebook || null, instagram || null, plano_id, status, video_url || null];
         if (req.files && req.files['foto']) {
             query += ', imagem=?';
             params.push(`/uploads/${req.files['foto'][0].filename}`);
@@ -228,6 +247,7 @@ app.post('/admin/atualizar/:id', upload.fields([{ name: 'foto', maxCount: 1 }, {
         await db.promise().execute(query, params);
         res.redirect('/admin');
     } catch (err) { 
+        console.error('Erro ao atualizar empresa:', err);
         res.status(500).send('Erro ao atualizar.'); 
     }
 });
