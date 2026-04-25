@@ -108,6 +108,34 @@ app.get('/local/:slug', async (req, res) => {
 app.get('/planos', (req, res) => { res.render('vendas-lojista'); });
 
 // ==========================================
+// 🔒 MIDDLEWARE DE SEGURANÇA (CADEADO DO ADMIN)
+// ==========================================
+const protegerAdmin = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader) {
+        res.setHeader('WWW-Authenticate', 'Basic realm="Acesso Restrito - Portal STL"');
+        return res.status(401).send('Acesso Negado. Área restrita da Resultados Online.');
+    }
+
+    // Decodifica a senha que o navegador envia
+    const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
+    const usuario = auth[0];
+    const senha = auth[1];
+
+    // ⚠️ ALERTA CEO: Troque 'daniel' e 'senha123' pelas suas credenciais reais!
+    if (usuario === 'daniel' && senha === 'senha123') {
+        next(); // Senha correta, a porta abre!
+    } else {
+        res.setHeader('WWW-Authenticate', 'Basic realm="Acesso Restrito - Portal STL"');
+        return res.status(401).send('Credenciais inválidas. Intruso bloqueado.');
+    }
+};
+
+// Ativa o cadeado para QUALQUER página que comece com /admin
+app.use('/admin', protegerAdmin);
+
+// ==========================================
 // ROTAS DO ADMIN (COM AS NOVAS CATEGORIAS)
 // ==========================================
 
