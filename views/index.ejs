@@ -4,13 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
+    <!-- SEO Básico -->
     <title>Portal São Thomé das Letras - Guia Comercial e Turístico</title>
-    <meta name="description" content="Encontre as melhores empresas, pousadas e serviços em São Thomé das Letras - MG. O seu guia completo da cidade mística.">
+    <meta name="description" content="Encontre as melhores empresas, pousadas e serviços em São Thomé das Letras - MG.">
     
+    <!-- Link para o CSS (Ajuste se o seu caminho for diferente) -->
     <link rel="stylesheet" href="/css/style.css">
 
+    <!-- 📡 1. GOOGLE SEARCH CONSOLE -->
     <meta name="google-site-verification" content="COLE_AQUI_O_CODIGO_DO_SEARCH_CONSOLE" />
 
+    <!-- 🕵️‍♂️ 2. GOOGLE ANALYTICS 4 (Rastreador G-BDTY71XR8Q) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-BDTY71XR8Q"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -22,61 +26,37 @@
 </head>
 <body>
 
-    <header class="main-header">
+    <!-- CABEÇALHO -->
+    <header class="main-header" style="text-align: center; padding: 20px; background-color: #f8f9fa;">
         <div class="container">
-            <h1 class="logo">Portal STL</h1>
+            <h1 class="logo">Portal São Thomé das Letras</h1>
             <nav>
-                <ul>
-                    <li><a href="/">Início</a></li>
-                    <li><a href="#categorias">Categorias</a></li>
-                    <li><a href="/admin">Anunciar</a></li>
-                </ul>
+                <a href="/" style="margin: 0 10px;">Início</a>
+                <a href="/admin" style="margin: 0 10px;">Anunciar / Admin</a>
             </nav>
         </div>
     </header>
 
-    <section class="hero">
-        <div class="hero-content">
-            <h2>Descubra o melhor de São Thomé das Letras</h2>
-            <form action="/busca" method="GET" class="search-box">
-                <input type="text" name="q" placeholder="O que você procura? (Pousadas, Restaurantes...)">
-                <button type="submit">Buscar</button>
-            </form>
-        </div>
-    </section>
+    <!-- CONTEÚDO PRINCIPAL (Seguro e Estático) -->
+    <main style="max-width: 800px; margin: 40px auto; text-align: center; font-family: sans-serif;">
+        <section class="hero">
+            <h2>Descubra a Magia de São Thomé</h2>
+            <p>O nosso diretório de empresas está a ser preparado. Em breve, as melhores pousadas, restaurantes e guias estarão disponíveis aqui!</p>
+            
+            <div style="margin-top: 30px; padding: 20px; border: 2px dashed #ccc; border-radius: 10px;">
+                <h3>🚧 Área de Construção 🚧</h3>
+                <p>O site está online e o radar do Google Analytics está ativo a 100%!</p>
+            </div>
+        </section>
+    </main>
 
-    <section id="categorias" class="container">
-        <h3>Explorar por Categoria</h3>
-        <div class="grid-categorias">
-            <% categorias.forEach(function(cat) { %>
-                <a href="/categoria/<%= cat.slug %>" class="card-categoria">
-                    <img src="/img/icones/<%= cat.slug %>.png" alt="<%= cat.nome %>">
-                    <span><%= cat.nome %></span>
-                </a>
-            <% }); %>
-        </div>
-    </section>
-
-    <section class="destaques container">
-        <h3>Empresas em Destaque</h3>
-        <div class="grid-empresas">
-            <% empresas.forEach(function(emp) { %>
-                <div class="card-empresa">
-                    <h4><%= emp.nome %></h4>
-                    <p><%= emp.descricao.substring(0, 100) %>...</p>
-                    <a href="/detalhes/<%= emp.id %>" class="btn-ver-mais">Ver Detalhes</a>
-                </div>
-            <% }); %>
-        </div>
-    </section>
-
-    <footer class="main-footer">
+    <!-- RODAPÉ -->
+    <footer class="main-footer" style="text-align: center; padding: 20px; margin-top: 40px; border-top: 1px solid #eee;">
         <div class="container">
             <p>&copy; 2026 Portal São Thomé das Letras. Uma iniciativa Resultados Online.</p>
-            <p>CEO: Daniel Paiva</p>
+            <p><small>CEO: Daniel Paiva</small></p>
         </div>
     </footer>
 
-    <script src="/js/main.js"></script>
 </body>
 </html>
