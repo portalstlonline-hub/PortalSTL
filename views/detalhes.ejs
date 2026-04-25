@@ -129,7 +129,8 @@
             <!-- COLUNA DIREITA: SIDEBAR/CONTATO -->
             <div class="space-y-6">
                 
-                <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100 sticky top-24">
+                <!-- Removido o 'sticky top-24' daqui para evitar sobreposições -->
+                <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
                     <h3 class="text-lg font-bold mb-6 text-slate-800 flex items-center gap-2">
                         <i class="far fa-address-card text-amber-500"></i> Contatos
                     </h3>
@@ -175,17 +176,17 @@
                 <div class="bg-slate-900 rounded-3xl p-6 shadow-xl text-white relative overflow-hidden">
                     <i class="fas fa-map-marked-alt absolute -bottom-4 -right-4 text-7xl text-slate-800 opacity-50 -rotate-12"></i>
                     
-                    <h3 class="text-lg font-black text-white mb-4 relative z-10 flex items-center gap-2">
+                    <h3 class="text-lg font-black text-white mb-4 relative flex items-center gap-2">
                         <i class="fas fa-location-dot text-amber-500"></i> Como Chegar
                     </h3>
                     
-                    <div class="relative z-10 mb-6">
+                    <div class="relative mb-6">
                         <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Endereço Registrado</p>
                         <p class="text-sm font-medium text-slate-200 leading-relaxed"><%= empresa.endereco || 'São Thomé das Letras, MG' %></p>
                     </div>
 
                     <% if(empresa.link_maps) { %>
-                        <a href="<%= empresa.link_maps %>" target="_blank" class="w-full bg-white hover:bg-amber-500 text-slate-900 hover:text-white font-black py-3.5 rounded-xl transition flex items-center justify-center gap-2 relative z-10 shadow-md">
+                        <a href="<%= empresa.link_maps %>" target="_blank" class="w-full bg-white hover:bg-amber-500 text-slate-900 hover:text-white font-black py-3.5 rounded-xl transition flex items-center justify-center gap-2 relative shadow-md">
                             <i class="fas fa-route"></i> Abrir no Google Maps
                         </a>
                     <% } %>
