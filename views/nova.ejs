@@ -1,41 +1,52 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Nova Empresa - Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Nova Empresa - Portal STL</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
 </head>
-<body class="bg-slate-50 p-6 md:p-12">
-    <div class="max-w-4xl mx-auto">
-        
-        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex justify-between items-center shadow-sm">
-            <div class="text-sm">
-                <strong class="text-amber-800">A categoria do cliente não existe?</strong>
-                <p class="text-amber-600 text-xs">Crie e ela aparecerá logo abaixo.</p>
+<body class="bg-slate-50 min-h-screen">
+
+    <header class="bg-slate-900 text-white py-4 px-6 shadow-md sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <div class="text-xl font-black tracking-tight text-slate-100">
+                PORTAL<span class="text-amber-500">STL</span> <span class="text-slate-400 font-normal text-sm ml-2">| Novo Cadastro</span>
             </div>
-            <form action="/admin/categorias" method="POST" class="flex gap-2">
-                <input type="text" name="nome_categoria" placeholder="Nova Categoria..." class="px-3 py-2 rounded-lg border border-amber-300 text-sm focus:outline-none" required>
-                <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-amber-700">Criar</button>
-            </form>
+            <a href="/admin" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 border border-slate-700">
+                <i class="fas fa-arrow-left"></i> Voltar ao Painel
+            </a>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-10">
+        
+        <div class="mb-8 text-center md:text-left">
+            <h1 class="text-3xl font-black text-slate-900">Cadastrar Empresa</h1>
+            <p class="text-slate-500 mt-1">Adicione um novo negócio ou serviço ao diretório de São Thomé.</p>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden p-8">
-            <div class="flex justify-between items-center mb-6 pb-4 border-b">
-                <h1 class="text-2xl font-bold">Cadastrar Empresa</h1>
-                <a href="/admin" class="text-slate-500 hover:text-amber-500"><i class="fas fa-arrow-left"></i> Voltar</a>
-            </div>
-
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-10">
             <form action="/admin/nova" method="POST" enctype="multipart/form-data" class="space-y-6">
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <h3 class="text-lg font-bold text-slate-900 mb-4 pb-2 border-b flex items-center gap-2">
+                    <i class="fas fa-id-card text-amber-500"></i> Informações de Registro
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Nome Comercial</label>
-                        <input type="text" name="nome" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3" required>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Nome da Empresa *</label>
+                        <input type="text" name="nome" placeholder="Ex: Pousada do Sol" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Categoria</label>
-                        <select name="categoria_id" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3" required>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Categoria *</label>
+                        <select name="categoria_id" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-amber-500 outline-none transition" required>
+                            <option value="">Selecione uma categoria...</option>
                             <% categorias.forEach(cat => { %>
                                 <option value="<%= cat.id %>"><%= cat.nome %></option>
                             <% }) %>
@@ -43,84 +54,83 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Plano de Destaque</label>
-                        <select name="plano_id" id="planoSelect" class="w-full bg-white border border-amber-400 rounded-xl p-3 shadow-sm">
-                            <option value="1">Start (Grátis)</option>
-                            <option value="2">Plano 1 (Vitrine Premium)</option>
-                            <option value="3">Plano 2 (Patrocinado no Topo)</option>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Definir Plano</label>
+                        <select name="plano_id" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-amber-500 outline-none transition font-medium">
+                            <option value="1">1. Start (Gratuito)</option>
+                            <option value="2">2. Vitrine Premium</option>
+                            <option value="3">3. Patrocinado (Destaque Home)</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Status da Conta</label>
-                        <select name="status" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3">
-                            <option value="ativo" selected>Ativo</option>
-                            <option value="inativo">Inativo</option>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Status Inicial</label>
+                        <select name="status" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:border-amber-500 outline-none transition font-bold">
+                            <option value="ativo">🟢 Ativo (Publicar agora)</option>
+                            <option value="inativo" selected>🔴 Inativo (Rascunho)</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- UPGRADE: GRID DE 3 COLUNAS PARA INCLUIR O GOOGLE MAPS -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">WhatsApp</label>
-                        <input type="text" name="whatsapp" class="w-full bg-slate-50 border rounded-xl p-3">
+                <h3 class="text-lg font-bold text-slate-900 mt-8 mb-4 pb-2 border-b flex items-center gap-2">
+                    <i class="fas fa-camera text-amber-500"></i> Fotos e Descrição
+                </h3>
+
+                <div class="mb-5">
+                    <label class="block text-sm font-bold text-slate-700 mb-1">Descrição do Negócio</label>
+                    <textarea name="descricao" rows="4" placeholder="Fale um pouco sobre a empresa, diferenciais, horários..." class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-amber-500 outline-none transition resize-none"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="bg-slate-50 p-5 rounded-xl border border-dashed border-slate-300">
+                        <label class="block text-sm font-bold text-slate-700 mb-3">Foto de Capa Principal</label>
+                        <input type="file" name="foto" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-slate-200 file:text-slate-700 hover:file:bg-slate-300 transition cursor-pointer">
+                        <p class="text-[10px] text-slate-400 mt-2 italic">Imagem que aparecerá nas buscas.</p>
                     </div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Endereço</label>
-                        <input type="text" name="endereco" class="w-full bg-slate-50 border rounded-xl p-3">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Link Google Maps</label>
-                        <input type="text" name="link_maps" placeholder="https://maps.app.goo.gl/..." class="w-full bg-slate-50 border rounded-xl p-3 text-sm">
+
+                    <div class="bg-amber-50 p-5 rounded-xl border border-dashed border-amber-300">
+                        <label class="block text-sm font-bold text-amber-800 mb-3">Galeria de Fotos (Até 6)</label>
+                        <input type="file" name="galeria" accept="image/*" multiple class="w-full text-sm text-amber-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-amber-500 file:text-white hover:file:bg-amber-600 transition cursor-pointer">
+                        <p class="text-[10px] text-amber-600 mt-2 font-bold uppercase tracking-wider">
+                            <i class="fas fa-check-circle"></i> Upgrade: Selecione até 6 imagens.
+                        </p>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div><label class="block text-sm font-bold text-slate-700 mb-2">Site</label><input type="text" name="site" class="w-full bg-slate-50 border rounded-xl p-3"></div>
-                    <div><label class="block text-sm font-bold text-slate-700 mb-2">Instagram</label><input type="text" name="instagram" class="w-full bg-slate-50 border rounded-xl p-3"></div>
-                    <div><label class="block text-sm font-bold text-slate-700 mb-2">Facebook</label><input type="text" name="facebook" class="w-full bg-slate-50 border rounded-xl p-3"></div>
-                </div>
-
-                <!-- EXCLUSIVOS DOS PLANOS PREMIUM -->
-                <div id="premium-features" class="hidden space-y-6 pt-6 border-t border-slate-200">
-                    <h3 class="font-bold text-amber-600 mb-2"><i class="fas fa-crown"></i> Benefícios Premium</h3>
-                    
+                <h3 class="text-lg font-bold text-slate-900 mt-8 mb-4 pb-2 border-b flex items-center gap-2">
+                    <i class="fas fa-phone-alt text-amber-500"></i> Contatos e Redes
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Descrição Completa do Local</label>
-                        <textarea name="descricao" rows="4" placeholder="Escreva os diferenciais, serviços oferecidos..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition"></textarea>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">WhatsApp (Só números)</label>
+                        <input type="text" name="whatsapp" placeholder="35999999999" class="w-full px-4 py-3 rounded-xl border border-slate-300 outline-none focus:border-amber-500 transition">
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Foto de Capa Principal</label>
-                            <input type="file" name="foto" accept="image/*" class="w-full bg-slate-50 border rounded-xl p-2">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Vídeo Promocional (Link do YouTube)</label>
-                            <input type="text" name="video_url" placeholder="https://www.youtube.com/watch?v=..." class="w-full bg-slate-50 border rounded-xl p-3 text-sm">
-                        </div>
-                    </div>
-
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Galeria de Imagens (Até 5 fotos)</label>
-                        <input type="file" name="galeria" accept="image/*" multiple class="w-full bg-amber-50 border border-amber-200 rounded-xl p-2 text-amber-800">
-                        <p class="text-xs text-slate-500 mt-2"><i class="fas fa-info-circle"></i> Segure o botão CTRL no teclado para selecionar várias fotos.</p>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Instagram (@)</label>
+                        <input type="text" name="instagram" placeholder="@seuinsta" class="w-full px-4 py-3 rounded-xl border border-slate-300 outline-none focus:border-amber-500 transition">
                     </div>
                 </div>
 
-                <button type="submit" class="w-full bg-slate-900 hover:bg-amber-500 text-white py-4 rounded-xl font-bold transition mt-8">Salvar Empresa</button>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Endereço</label>
+                        <input type="text" name="endereco" placeholder="Ex: Rua da Lua, 50" class="w-full px-4 py-3 rounded-xl border border-slate-300 outline-none focus:border-amber-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Link Google Maps</label>
+                        <input type="url" name="link_maps" placeholder="https://goo.gl/maps/..." class="w-full px-4 py-3 rounded-xl border border-slate-300 outline-none focus:border-amber-500 transition">
+                    </div>
+                </div>
+
+                <div class="mt-10 pt-8 border-t border-slate-100">
+                    <button type="submit" class="w-full bg-slate-900 hover:bg-black text-white font-black py-5 rounded-2xl transition shadow-xl hover:scale-[1.01] flex justify-center items-center gap-3 text-lg">
+                        <i class="fas fa-rocket"></i> CADASTRAR EMPRESA NO PORTAL
+                    </button>
+                </div>
             </form>
         </div>
-    </div>
+    </main>
 
-    <script>
-        document.getElementById('planoSelect').addEventListener('change', function() {
-            const premiumBox = document.getElementById('premium-features');
-            premiumBox.style.display = (this.value === '2' || this.value === '3') ? 'block' : 'none';
-        });
-        document.getElementById('planoSelect').dispatchEvent(new Event('change'));
-    </script>
 </body>
 </html>
