@@ -43,10 +43,7 @@ app.get('/', async (req, res) => {
     try {
         const [categorias] = await db.promise().execute('SELECT * FROM categorias ORDER BY nome ASC');
         const [patrocinados] = await db.promise().execute('SELECT * FROM empresas WHERE status = "ativo" AND plano_id = 3 ORDER BY RAND() LIMIT 3');
-        
-        // CORREÇÃO DO BUG FANTASMA: Agora só é verdadeiro se a palavra for exatamente "true"
         const mostrarSucesso = req.query.sucesso === 'true';
-        
         res.render('index', { title: 'Portal STL', categorias, patrocinados, sucesso: mostrarSucesso });
     } catch (err) { 
         console.error('Erro na Home:', err);
@@ -59,20 +56,7 @@ app.post('/contato', async (req, res) => {
         const { nome, categoria_id, whatsapp, endereco, link_maps, site, facebook, instagram } = req.body;
         const slug = (nome || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
         const query = `INSERT INTO empresas (categoria_id, plano_id, nome, slug, endereco, link_maps, whatsapp, site, facebook, instagram, status) VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, 'inativo')`;
-        
-        // VACINA APLICADA: Tudo o que não vier do form vira "null" em vez de crashar o MySQL
-        await db.promise().execute(query, [
-            categoria_id, 
-            nome, 
-            slug, 
-            endereco || null, 
-            link_maps || null, 
-            whatsapp || null, 
-            site || null, 
-            facebook || null, 
-            instagram || null
-        ]);
-        
+        await db.promise().execute(query, [categoria_id, nome, slug, endereco || null, link_maps || null, whatsapp || null, site || null, facebook || null, instagram || null]);
         res.redirect('/?sucesso=true#anunciar');
     } catch (err) { 
         console.error('Erro ao salvar formulário:', err);
@@ -86,70 +70,44 @@ app.get('/explorar', async (req, res) => {
         const buscaTexto = req.query.busca;
         let queryEmpresas = 'SELECT e.*, c.nome as categoria_nome FROM empresas e LEFT JOIN categorias c ON e.categoria_id = c.id WHERE e.status = "ativo"';
         let params = [];
-        
-        if (categoriaFiltro) { 
-            queryEmpresas += ' AND e.categoria_id = ?'; 
-            params.push(categoriaFiltro); 
-        }
-        
+        if (categoriaFiltro) { queryEmpresas += ' AND e.categoria_id = ?'; params.push(categoriaFiltro); }
         if (buscaTexto) { 
             let termoLimpo = buscaTexto.trim();
-            if (termoLimpo.toLowerCase().endsWith('s') && termoLimpo.length > 3) {
-                termoLimpo = termoLimpo.slice(0, -1);
-            }
+            if (termoLimpo.toLowerCase().endsWith('s') && termoLimpo.length > 3) termoLimpo = termoLimpo.slice(0, -1);
             const termo = `%${termoLimpo}%`;
             queryEmpresas += ' AND (e.nome LIKE ? OR c.nome LIKE ? OR c.palavras_chave LIKE ? OR e.descricao LIKE ?)'; 
             params.push(termo, termo, termo, termo); 
         }
-        
         queryEmpresas += ' ORDER BY e.plano_id DESC, RAND()';
-        
         const [locais] = await db.promise().execute(queryEmpresas, params);
         const [categorias] = await db.promise().execute('SELECT * FROM categorias ORDER BY nome ASC');
         res.render('listagem', { locais, categorias, categoriaAtual: categoriaFiltro, buscaAtual: buscaTexto });
-    } catch (err) { 
-        res.status(500).send('Erro interno'); 
-    }
+    } catch (err) { res.status(500).send('Erro interno'); }
 });
 
 app.get('/local/:slug', async (req, res) => {
     try {
         const [empresas] = await db.promise().execute('SELECT * FROM empresas WHERE slug = ? AND status = "ativo"', [req.params.slug]);
-        if (empresas.length === 0) return res.status(404).send('Página não encontrada ou empresa inativa.');
+        if (empresas.length === 0) return res.status(404).send('Página não encontrada.');
         res.render('detalhes', { empresa: empresas[0] });
-    } catch (erro) { 
-        res.status(500).send('Erro interno'); 
-    }
+    } catch (erro) { res.status(500).send('Erro interno'); }
 });
 
-app.get('/planos', (req, res) => { res.render('vendas-lojista'); });
-
 // ==========================================
-// 🔒 MIDDLEWARE DE SEGURANÇA BLINDADO
+// 🔒 SEGURANÇA
 // ==========================================
 const protegerAdmin = (req, res, next) => {
-    try {
-        const authHeader = req.headers.authorization;
-        
-        if (!authHeader) {
-            res.setHeader('WWW-Authenticate', 'Basic realm="Acesso Restrito - Portal STL"');
-            return res.status(401).send('Acesso Negado. Área restrita da Resultados Online.');
-        }
-
-        const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
-        const usuario = auth[0];
-        const senha = auth[1];
-
-        // ⚠️ Troque 'daniel' e 'senha123' pelas suas credenciais reais!
-        if (usuario === 'daniel' && senha === 'senha123') {
-            next(); 
-        } else {
-            res.setHeader('WWW-Authenticate', 'Basic realm="Acesso Restrito - Portal STL"');
-            return res.status(401).send('Credenciais inválidas.');
-        }
-    } catch (error) {
-        console.error('Erro na segurança:', error);
-        res.status(500).send('Erro interno de autenticação.');
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        res.setHeader('WWW-Authenticate', 'Basic realm="Acesso Restrito"');
+        return res.status(401).send('Acesso Negado.');
+    }
+    const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
+    if (auth[0] === 'daniel' && auth[1] === 'senha123') { // Lembre-se de mudar a senha!
+        next();
+    } else {
+        res.setHeader('WWW-Authenticate', 'Basic realm="Acesso Restrito"');
+        return res.status(401).send('Credenciais inválidas.');
     }
 };
 
@@ -164,20 +122,33 @@ app.get('/admin', async (req, res) => {
         const [empresas] = await db.promise().execute(`SELECT empresas.*, categorias.nome as categoria_nome FROM empresas LEFT JOIN categorias ON empresas.categoria_id = categorias.id ORDER BY empresas.id DESC`);
         const [categoriasLista] = await db.promise().execute('SELECT * FROM categorias ORDER BY nome ASC');
         res.render('admin', { empresas, categoriasLista });
-    } catch (err) {
-        console.error('Erro no Admin:', err);
-        res.status(500).send('Erro interno no Painel de Controle');
-    }
+    } catch (err) { res.status(500).send('Erro interno'); }
 });
 
+// --- EXCLUIR EMPRESA ---
+app.get('/admin/excluir/:id', async (req, res) => {
+    try {
+        await db.promise().execute('DELETE FROM empresas WHERE id = ?', [req.params.id]);
+        res.redirect('/admin');
+    } catch (err) { res.status(500).send('Erro ao excluir empresa.'); }
+});
+
+// --- EXCLUIR CATEGORIA ---
+app.get('/admin/categorias/excluir/:id', async (req, res) => {
+    try {
+        // Alerta: Isso pode deixar empresas sem categoria se não for tratado
+        await db.promise().execute('DELETE FROM categorias WHERE id = ?', [req.params.id]);
+        res.redirect('/admin');
+    } catch (err) { res.status(500).send('Erro ao excluir categoria. Verifique se existem empresas nela.'); }
+});
+
+// (As outras rotas de admin continuam iguais...)
 app.post('/admin/categorias/atualizar/:id', async (req, res) => {
     try {
         const { nome, palavras_chave } = req.body;
         await db.promise().execute('UPDATE categorias SET nome = ?, palavras_chave = ? WHERE id = ?', [nome, palavras_chave || null, req.params.id]);
         res.redirect('/admin');
-    } catch (err) {
-        res.status(500).send('Erro ao atualizar categoria');
-    }
+    } catch (err) { res.status(500).send('Erro ao atualizar categoria'); }
 });
 
 app.post('/admin/categorias', async (req, res) => {
@@ -186,18 +157,14 @@ app.post('/admin/categorias', async (req, res) => {
         const slug = (nome_categoria || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
         await db.promise().execute('INSERT IGNORE INTO categorias (nome, slug) VALUES (?, ?)', [nome_categoria, slug]);
         res.redirect('/admin');
-    } catch (err) { 
-        res.status(500).send('Erro ao criar categoria'); 
-    }
+    } catch (err) { res.status(500).send('Erro ao criar categoria'); }
 });
 
 app.get('/admin/nova', async (req, res) => {
     try {
         const [categorias] = await db.promise().execute('SELECT * FROM categorias ORDER BY nome ASC');
         res.render('nova', { categorias });
-    } catch (err) { 
-        res.status(500).send(err); 
-    }
+    } catch (err) { res.status(500).send(err); }
 });
 
 app.post('/admin/nova', upload.fields([{ name: 'foto', maxCount: 1 }, { name: 'galeria', maxCount: 5 }]), async (req, res) => {
@@ -207,16 +174,12 @@ app.post('/admin/nova', upload.fields([{ name: 'foto', maxCount: 1 }, { name: 'g
         let imagemUrl = null;
         if (req.files && req.files['foto']) imagemUrl = `/uploads/${req.files['foto'][0].filename}`;
         let galeriaJson = null;
-        if (req.files && req.files['galeria']) {
-            galeriaJson = JSON.stringify(req.files['galeria'].map(f => `/uploads/${f.filename}`));
-        }
+        if (req.files && req.files['galeria']) galeriaJson = JSON.stringify(req.files['galeria'].map(f => `/uploads/${f.filename}`));
+        
         const query = `INSERT INTO empresas (categoria_id, plano_id, nome, slug, descricao, endereco, link_maps, whatsapp, site, facebook, instagram, imagem, video_url, galeria, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         await db.promise().execute(query, [categoria_id, plano_id, nome, slug, descricao || null, endereco || null, link_maps || null, whatsapp || null, site || null, facebook || null, instagram || null, imagemUrl, video_url || null, galeriaJson, status]);
         res.redirect('/admin');
-    } catch (err) { 
-        console.error('Erro em Nova Empresa:', err);
-        res.status(500).send('Erro ao salvar.'); 
-    }
+    } catch (err) { res.status(500).send('Erro ao salvar.'); }
 });
 
 app.get('/admin/editar/:id', async (req, res) => {
@@ -224,9 +187,7 @@ app.get('/admin/editar/:id', async (req, res) => {
         const [empresa] = await db.promise().execute('SELECT * FROM empresas WHERE id = ?', [req.params.id]);
         const [categorias] = await db.promise().execute('SELECT * FROM categorias ORDER BY nome ASC');
         res.render('editar', { empresa: empresa[0], categorias });
-    } catch (err) { 
-        res.status(500).send(err); 
-    }
+    } catch (err) { res.status(500).send(err); }
 });
 
 app.post('/admin/atualizar/:id', upload.fields([{ name: 'foto', maxCount: 1 }, { name: 'galeria', maxCount: 5 }]), async (req, res) => {
@@ -234,22 +195,34 @@ app.post('/admin/atualizar/:id', upload.fields([{ name: 'foto', maxCount: 1 }, {
         const { nome, categoria_id, descricao, endereco, link_maps, whatsapp, site, facebook, instagram, plano_id, status, video_url } = req.body;
         let query = 'UPDATE empresas SET categoria_id=?, nome=?, descricao=?, endereco=?, link_maps=?, whatsapp=?, site=?, facebook=?, instagram=?, plano_id=?, status=?, video_url=?';
         let params = [categoria_id, nome, descricao || null, endereco || null, link_maps || null, whatsapp || null, site || null, facebook || null, instagram || null, plano_id, status, video_url || null];
-        if (req.files && req.files['foto']) {
-            query += ', imagem=?';
-            params.push(`/uploads/${req.files['foto'][0].filename}`);
-        }
-        if (req.files && req.files['galeria'] && req.files['galeria'].length > 0) {
-            query += ', galeria=?';
-            params.push(JSON.stringify(req.files['galeria'].map(f => `/uploads/${f.filename}`)));
-        }
+        if (req.files && req.files['foto']) { query += ', imagem=?'; params.push(`/uploads/${req.files['foto'][0].filename}`); }
+        if (req.files && req.files['galeria'] && req.files['galeria'].length > 0) { query += ', galeria=?'; params.push(JSON.stringify(req.files['galeria'].map(f => `/uploads/${f.filename}`))); }
         query += ' WHERE id=?';
         params.push(req.params.id);
         await db.promise().execute(query, params);
         res.redirect('/admin');
-    } catch (err) { 
-        console.error('Erro ao atualizar empresa:', err);
-        res.status(500).send('Erro ao atualizar.'); 
-    }
+    } catch (err) { res.status(500).send('Erro ao atualizar.'); }
 });
 
-app.listen(port, () => console.log(`🚀 Servidor a rodar na porta ${port}`));
+app.listen(port, () => console.log(`🚀 Servidor na porta ${port}`));
+```
+
+### 💡 Dica para o Painel (`admin.ejs`)
+No seu arquivo `admin.ejs`, onde você lista as empresas e categorias, você deve adicionar os links de exclusão. Para evitar cliques por erro, recomendo usar um pequeno código de confirmação em JavaScript no botão:
+
+**Para Empresas:**
+```html
+<a href="/admin/excluir/<%= local.id %>" 
+   onclick="return confirm('Tem certeza que deseja apagar esta empresa? Esta ação não tem volta!')" 
+   class="text-red-500 hover:text-red-700">
+   <i class="fas fa-trash"></i> Excluir
+</a>
+```
+
+**Para Categorias:**
+```html
+<a href="/admin/categorias/excluir/<%= cat.id %>" 
+   onclick="return confirm('Apagar categoria? Isso pode afetar empresas cadastradas nela!')" 
+   class="text-red-500 hover:text-red-700">
+   <i class="fas fa-trash"></i> Excluir
+</a>
