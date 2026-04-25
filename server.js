@@ -24,7 +24,13 @@ const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, 'public/uploads/'),
     filename: (req, file, cb) => cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname))
 });
+
+// 📸 UPGRADE: Agora aceitamos até 6 fotos na galeria!
 const upload = multer({ storage: storage });
+const uploadConfig = upload.fields([
+    { name: 'foto', maxCount: 1 }, 
+    { name: 'galeria', maxCount: 6 } 
+]);
 
 const db = mysql.createPool({
     host: process.env.DB_HOST,
@@ -59,7 +65,6 @@ app.post('/contato', async (req, res) => {
         await db.promise().execute(query, [categoria_id, nome, slug, endereco || null, link_maps || null, whatsapp || null, site || null, facebook || null, instagram || null]);
         res.redirect('/?sucesso=true#anunciar');
     } catch (err) { 
-        console.error('Erro ao salvar formulário:', err);
         res.redirect('/?sucesso=false#anunciar'); 
     }
 });
@@ -85,12 +90,22 @@ app.get('/explorar', async (req, res) => {
     } catch (err) { res.status(500).send('Erro interno'); }
 });
 
+// 🕵️‍♂️ UPGRADE SEO: Rota de detalhes agora traz o nome da categoria!
 app.get('/local/:slug', async (req, res) => {
     try {
-        const [empresas] = await db.promise().execute('SELECT * FROM empresas WHERE slug = ? AND status = "ativo"', [req.params.slug]);
+        const query = `
+            SELECT e.*, c.nome as categoria_nome 
+            FROM empresas e 
+            LEFT JOIN categorias c ON e.categoria_id = c.id 
+            WHERE e.slug = ? AND e.status = "ativo"
+        `;
+        const [empresas] = await db.promise().execute(query, [req.params.slug]);
         if (empresas.length === 0) return res.status(404).send('Página não encontrada.');
         res.render('detalhes', { empresa: empresas[0] });
-    } catch (erro) { res.status(500).send('Erro interno'); }
+    } catch (erro) { 
+        console.error(erro);
+        res.status(500).send('Erro interno'); 
+    }
 });
 
 // ==========================================
@@ -103,7 +118,7 @@ const protegerAdmin = (req, res, next) => {
         return res.status(401).send('Acesso Negado.');
     }
     const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
-    if (auth[0] === 'daniel' && auth[1] === 'senha123') { // Lembre-se de mudar a senha!
+    if (auth[0] === 'daniel' && auth[1] === 'senha123') { 
         next();
     } else {
         res.setHeader('WWW-Authenticate', 'Basic realm="Acesso Restrito"');
@@ -125,7 +140,6 @@ app.get('/admin', async (req, res) => {
     } catch (err) { res.status(500).send('Erro interno'); }
 });
 
-// --- EXCLUIR EMPRESA ---
 app.get('/admin/excluir/:id', async (req, res) => {
     try {
         await db.promise().execute('DELETE FROM empresas WHERE id = ?', [req.params.id]);
@@ -133,16 +147,13 @@ app.get('/admin/excluir/:id', async (req, res) => {
     } catch (err) { res.status(500).send('Erro ao excluir empresa.'); }
 });
 
-// --- EXCLUIR CATEGORIA ---
 app.get('/admin/categorias/excluir/:id', async (req, res) => {
     try {
-        // Alerta: Isso pode deixar empresas sem categoria se não for tratado
         await db.promise().execute('DELETE FROM categorias WHERE id = ?', [req.params.id]);
         res.redirect('/admin');
-    } catch (err) { res.status(500).send('Erro ao excluir categoria. Verifique se existem empresas nela.'); }
+    } catch (err) { res.status(500).send('Erro ao excluir categoria.'); }
 });
 
-// (As outras rotas de admin continuam iguais...)
 app.post('/admin/categorias/atualizar/:id', async (req, res) => {
     try {
         const { nome, palavras_chave } = req.body;
@@ -167,7 +178,7 @@ app.get('/admin/nova', async (req, res) => {
     } catch (err) { res.status(500).send(err); }
 });
 
-app.post('/admin/nova', upload.fields([{ name: 'foto', maxCount: 1 }, { name: 'galeria', maxCount: 5 }]), async (req, res) => {
+app.post('/admin/nova', uploadConfig, async (req, res) => {
     try {
         const { nome, categoria_id, descricao, endereco, link_maps, whatsapp, site, facebook, instagram, plano_id, status, video_url } = req.body;
         const slug = (nome || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
@@ -179,7 +190,10 @@ app.post('/admin/nova', upload.fields([{ name: 'foto', maxCount: 1 }, { name: 'g
         const query = `INSERT INTO empresas (categoria_id, plano_id, nome, slug, descricao, endereco, link_maps, whatsapp, site, facebook, instagram, imagem, video_url, galeria, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         await db.promise().execute(query, [categoria_id, plano_id, nome, slug, descricao || null, endereco || null, link_maps || null, whatsapp || null, site || null, facebook || null, instagram || null, imagemUrl, video_url || null, galeriaJson, status]);
         res.redirect('/admin');
-    } catch (err) { res.status(500).send('Erro ao salvar.'); }
+    } catch (err) { 
+        console.error(err);
+        res.status(500).send('Erro ao salvar.'); 
+    }
 });
 
 app.get('/admin/editar/:id', async (req, res) => {
@@ -190,7 +204,7 @@ app.get('/admin/editar/:id', async (req, res) => {
     } catch (err) { res.status(500).send(err); }
 });
 
-app.post('/admin/atualizar/:id', upload.fields([{ name: 'foto', maxCount: 1 }, { name: 'galeria', maxCount: 5 }]), async (req, res) => {
+app.post('/admin/atualizar/:id', uploadConfig, async (req, res) => {
     try {
         const { nome, categoria_id, descricao, endereco, link_maps, whatsapp, site, facebook, instagram, plano_id, status, video_url } = req.body;
         let query = 'UPDATE empresas SET categoria_id=?, nome=?, descricao=?, endereco=?, link_maps=?, whatsapp=?, site=?, facebook=?, instagram=?, plano_id=?, status=?, video_url=?';
@@ -201,7 +215,10 @@ app.post('/admin/atualizar/:id', upload.fields([{ name: 'foto', maxCount: 1 }, {
         params.push(req.params.id);
         await db.promise().execute(query, params);
         res.redirect('/admin');
-    } catch (err) { res.status(500).send('Erro ao atualizar.'); }
+    } catch (err) { 
+        console.error(err);
+        res.status(500).send('Erro ao atualizar.'); 
+    }
 });
 
 app.listen(port, () => console.log(`🚀 Servidor na porta ${port}`));
