@@ -38,36 +38,32 @@
             <a href="/" class="text-xl font-black tracking-tighter text-slate-900">
                 PORTAL<span class="text-amber-500">STL</span>
             </a>
-            <a href="/explorar" class="text-sm font-bold text-slate-600 hover:text-amber-600 transition flex items-center gap-1">
-                <i class="fas fa-search"></i> Explorar
-            </a>
+            <div class="flex items-center gap-4">
+                <a href="/explorar" class="text-sm font-bold text-slate-600 hover:text-amber-600 transition flex items-center gap-1">
+                    <i class="fas fa-search"></i> Explorar
+                </a>
+                <a href="/#anunciar" class="bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold px-5 py-2 rounded-full transition shadow-sm hidden sm:block">
+                    Anuncie
+                </a>
+            </div>
         </div>
     </nav>
 
-    <!-- BANNER PRINCIPAL / CAPA -->
-    <div class="relative h-[40vh] md:h-[60vh] w-full overflow-hidden bg-slate-800">
+    <!-- BANNER PRINCIPAL / CAPA (PROPORÇÃO FACEBOOK: 820x312) -->
+    <div class="relative w-full aspect-[16/9] md:aspect-[820/312] bg-slate-900 overflow-hidden flex justify-center items-center">
         <% if(empresa.imagem) { %>
-            <img src="<%= empresa.imagem %>" alt="<%= empresa.nome %>" class="w-full h-full object-cover opacity-90">
+            <!-- object-contain garante que a imagem não seja cortada, visualização completa da arte -->
+            <img src="<%= empresa.imagem %>" alt="<%= empresa.nome %>" class="w-full h-full object-cover sm:object-contain opacity-95">
         <% } else { %>
-            <div class="w-full h-full flex items-center justify-center bg-slate-300 text-slate-400">
+            <div class="w-full h-full flex items-center justify-center bg-slate-800 text-slate-500">
                 <i class="fas fa-image text-6xl"></i>
             </div>
         <% } %>
-        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
-        <div class="absolute bottom-0 left-0 w-full p-6 md:p-12">
+        
+        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+        <div class="absolute bottom-0 left-0 w-full p-4 md:p-10">
             <div class="max-w-6xl mx-auto">
                 <h1 class="text-3xl md:text-5xl lg:text-6xl font-black text-white drop-shadow-lg leading-tight"><%= empresa.nome %></h1>
-                
-                <!-- ⭐ PROVA SOCIAL FAKE (Aparece apenas para Premium/Patrocinado) -->
-                <% if(empresa.plano_id >= 2) { %>
-                    <div class="flex items-center gap-2 mt-3 mb-2">
-                        <div class="flex text-amber-400 text-sm drop-shadow">
-                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-                        </div>
-                        <span class="text-white font-bold text-sm">4.9</span>
-                        <span class="text-slate-300 text-xs underline cursor-pointer">(+120 avaliações de turistas)</span>
-                    </div>
-                <% } %>
 
                 <div class="flex flex-wrap gap-3 mt-3">
                     <span class="bg-amber-500 text-white text-xs font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-lg">
@@ -93,7 +89,7 @@
                 <!-- Descrição -->
                 <section class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100">
                     <h2 class="text-xl font-extrabold mb-4 flex items-center gap-2">
-                        <i class="fas fa-align-left text-amber-500"></i> Sobre o local
+                        <i class="fas fa-align-left text-amber-500"></i> Sobre
                     </h2>
                     <p class="text-slate-600 leading-relaxed whitespace-pre-line text-lg">
                         <%= empresa.descricao || 'Este local ainda não possui uma descrição detalhada.' %>
@@ -128,31 +124,6 @@
                     </section>
                 <% } %>
 
-                <!-- ⭐ AVALIAÇÕES FAKES (Premium) -->
-                <% if(empresa.plano_id >= 2) { %>
-                <section class="bg-amber-50 rounded-3xl p-6 md:p-8 border border-amber-100">
-                    <h2 class="text-xl font-extrabold text-slate-900 mb-6 flex items-center gap-2">
-                        <i class="fas fa-star text-amber-500"></i> Avaliações Recentes
-                    </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-white p-5 rounded-2xl shadow-sm relative">
-                            <i class="fas fa-quote-right absolute top-4 right-4 text-slate-100 text-3xl"></i>
-                            <div class="flex text-amber-400 text-xs mb-2">
-                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                            </div>
-                            <p class="text-slate-600 text-sm italic">"Lugar incrível, atendimento impecável. Encontrei aqui pelo portal e foi a melhor escolha na cidade!"</p>
-                        </div>
-                        <div class="bg-white p-5 rounded-2xl shadow-sm relative">
-                            <i class="fas fa-quote-right absolute top-4 right-4 text-slate-100 text-3xl"></i>
-                            <div class="flex text-amber-400 text-xs mb-2">
-                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                            </div>
-                            <p class="text-slate-600 text-sm italic">"A energia do lugar é surreal. Recomendo de olhos fechados para quem for a São Thomé."</p>
-                        </div>
-                    </div>
-                </section>
-                <% } %>
-
             </div>
 
             <!-- COLUNA DIREITA: SIDEBAR/CONTATO -->
@@ -160,7 +131,7 @@
                 
                 <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100 sticky top-24">
                     <h3 class="text-lg font-bold mb-6 text-slate-800 flex items-center gap-2">
-                        <i class="far fa-address-card text-amber-500"></i> Contactos
+                        <i class="far fa-address-card text-amber-500"></i> Contatos
                     </h3>
                     
                     <div class="space-y-4">
@@ -220,16 +191,6 @@
                     <% } %>
                 </div>
                 <% } %>
-
-                <!-- CTA Agência (Isca para captar Lojistas) -->
-                <div class="bg-slate-800 rounded-3xl p-6 text-white overflow-hidden relative group mt-6">
-                    <div class="relative z-10">
-                        <p class="text-xs font-bold text-amber-400 uppercase tracking-widest mb-1">Para Lojistas</p>
-                        <h4 class="text-lg font-black leading-tight">Quer a sua empresa em destaque?</h4>
-                        <a href="/#anunciar" class="inline-block mt-4 text-sm font-bold bg-white text-slate-900 px-5 py-2.5 rounded-full hover:bg-amber-500 hover:text-white transition shadow-md">Conhecer Planos</a>
-                    </div>
-                    <i class="fas fa-rocket absolute -bottom-4 -right-4 text-7xl text-white/5 -rotate-12 group-hover:scale-110 transition"></i>
-                </div>
 
             </div>
         </div>
