@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Portal STL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .tab-btn.active { border-bottom: 2px solid #f59e0b; color: #f59e0b; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+    <nav class="bg-slate-900 text-white p-4 shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-tight">Portal<span class="text-amber-500">STL</span> Admin</h1>
+            <div class="flex items-center gap-4">
+                <a href="/" target="_blank" class="text-sm text-slate-300 hover:text-white transition"><i class="fas fa-external-link-alt mr-1"></i> Ver Site</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto p-6 md:p-8">
+        
+        <div class="flex border-b border-slate-200 mb-8">
+            <button onclick="switchTab('empresas')" id="btn-empresas" class="tab-btn active px-6 py-3 font-bold text-slate-600 hover:text-amber-500 transition focus:outline-none">
+                <i class="fas fa-store mr-2"></i> Empresas
+            </button>
+            <button onclick="switchTab('categorias')" id="btn-categorias" class="tab-btn px-6 py-3 font-bold text-slate-600 hover:text-amber-500 transition focus:outline-none">
+                <i class="fas fa-tags mr-2"></i> Categorias & SEO
+            </button>
+        </div>
+
+        <div id="tab-empresas" class="tab-content active">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">Empresas Cadastradas</h2>
+                <a href="/admin/nova" class="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2.5 rounded-lg font-bold shadow transition flex items-center gap-2">
+                    <i class="fas fa-plus"></i> Nova Empresa
+                </a>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-600 text-sm border-b border-slate-200">
+                                <th class="p-4 font-bold">ID</th>
+                                <th class="p-4 font-bold">Empresa</th>
+                                <th class="p-4 font-bold">Categoria</th>
+                                <th class="p-4 font-bold">Plano</th>
+                                <th class="p-4 font-bold">Status</th>
+                                <th class="p-4 font-bold text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% empresas.forEach(empresa => { %>
+                                <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+                                    <td class="p-4 text-slate-500 text-sm">#<%= empresa.id %></td>
+                                    <td class="p-4">
+                                        <div class="font-bold text-slate-800"><%= empresa.nome %></div>
+                                        <div class="text-xs text-slate-400"><%= empresa.slug %></div>
+                                    </td>
+                                    <td class="p-4 text-sm text-slate-600"><%= empresa.categoria_nome %></td>
+                                    <td class="p-4">
+                                        <% if (empresa.plano_id == 1) { %><span class="bg-slate-200 text-slate-700 text-xs px-2 py-1 rounded font-bold">Grátis</span><% } %>
+                                        <% if (empresa.plano_id == 2) { %><span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-bold">Vitrine</span><% } %>
+                                        <% if (empresa.plano_id == 3) { %><span class="bg-amber-100 text-amber-700 text-xs px-2 py-1 rounded font-bold"><i class="fas fa-crown mr-1"></i> Patrocinado</span><% } %>
+                                    </td>
+                                    <td class="p-4">
+                                        <% if (empresa.status == 'ativo') { %>
+                                            <span class="text-green-600 bg-green-50 px-2 py-1 rounded text-xs font-bold border border-green-200">Ativo</span>
+                                        <% } else { %>
+                                            <span class="text-red-600 bg-red-50 px-2 py-1 rounded text-xs font-bold border border-red-200">Inativo</span>
+                                        <% } %>
+                                    </td>
+                                    <td class="p-4 text-right">
+                                        <a href="/admin/editar/<%= empresa.id %>" class="text-slate-400 hover:text-amber-500 transition px-2" title="Editar"><i class="fas fa-edit"></i></a>
+                                        <a href="/local/<%= empresa.slug %>" target="_blank" class="text-slate-400 hover:text-blue-500 transition px-2" title="Ver Página"><i class="fas fa-eye"></i></a>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-categorias" class="tab-content">
+            
+            <div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl p-6 mb-8 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-amber-400 flex items-center gap-2"><i class="fas fa-magic"></i> O "Cérebro" das Buscas</h2>
+                    <p class="text-sm text-slate-300 mt-1 max-w-2xl">Aqui você define os sinónimos (tags). Se o cliente pesquisar "padoca", o sistema vai listar as empresas da categoria "Padaria", desde que você cadastre essa palavra aqui.</p>
+                </div>
+                <button onclick="document.getElementById('form-nova-categoria').classList.toggle('hidden')" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2 rounded-lg transition whitespace-nowrap shadow">
+                    + Nova Categoria
+                </button>
+            </div>
+
+            <form id="form-nova-categoria" action="/admin/categorias" method="POST" class="hidden bg-white p-6 rounded-xl border border-amber-200 shadow-sm mb-8 animate-fade-in flex gap-4 items-end">
+                <div class="flex-grow">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Nome da Nova Categoria</label>
+                    <input type="text" name="nome_categoria" placeholder="Ex: Farmácias" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 focus:outline-none focus:border-amber-500" required>
+                </div>
+                <button type="submit" class="bg-slate-900 text-white font-bold px-6 py-3 rounded-lg hover:bg-amber-500 hover:text-slate-900 transition h-[50px]">Criar</button>
+            </form>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <% if(typeof categoriasLista !== 'undefined') { categoriasLista.forEach(cat => { %>
+                    <form action="/admin/categorias/atualizar/<%= cat.id %>" method="POST" class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition">
+                        <div class="mb-3">
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Nome Oficial</label>
+                            <input type="text" name="nome" value="<%= cat.nome %>" class="w-full font-bold text-slate-800 bg-transparent border-b border-slate-200 focus:border-amber-500 focus:outline-none pb-1">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-xs font-bold text-slate-500 mb-1" title="Palavras-chave separadas por vírgula"><i class="fas fa-tags text-amber-500"></i> Sinónimos (SEO)</label>
+                            <textarea name="palavras_chave" rows="2" placeholder="pão, padoca, lanche..." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm text-slate-600 focus:outline-none focus:border-amber-500"><%= cat.palavras_chave || '' %></textarea>
+                            <p class="text-[10px] text-slate-400 mt-1">Separe as palavras por vírgulas.</p>
+                        </div>
+                        <button type="submit" class="w-full bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-700 font-bold py-2 rounded text-sm transition">Salvar SEO</button>
+                    </form>
+                <% }) } else { %>
+                    <div class="col-span-full p-4 bg-amber-50 text-amber-800 rounded-lg border border-amber-200 text-sm font-bold text-center">
+                        Atualize o servidor (server.js) para carregar as categorias.
+                    </div>
+                <% } %>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('tab-' + tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+    </script>
+</body>
+</html>

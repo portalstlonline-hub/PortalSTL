@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Empresa - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-50 p-6 md:p-12">
+    <div class="max-w-4xl mx-auto">
+        
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex justify-between items-center shadow-sm">
+            <div class="text-sm">
+                <strong class="text-amber-800">A categoria do cliente não existe?</strong>
+                <p class="text-amber-600 text-xs">Crie e ela aparecerá logo abaixo.</p>
+            </div>
+            <form action="/admin/categorias" method="POST" class="flex gap-2">
+                <input type="text" name="nome_categoria" placeholder="Nova Categoria..." class="px-3 py-2 rounded-lg border border-amber-300 text-sm focus:outline-none" required>
+                <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-amber-700">Criar</button>
+            </form>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden p-8">
+            <div class="flex justify-between items-center mb-6 pb-4 border-b">
+                <h1 class="text-2xl font-bold">Editar: <%= empresa.nome %></h1>
+                <a href="/admin" class="text-slate-500 hover:text-amber-500"><i class="fas fa-arrow-left"></i> Voltar</a>
+            </div>
+
+            <form action="/admin/atualizar/<%= empresa.id %>" method="POST" enctype="multipart/form-data" class="space-y-6">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Nome Comercial</label>
+                        <input type="text" name="nome" value="<%= empresa.nome %>" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Categoria</label>
+                        <select name="categoria_id" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3" required>
+                            <% categorias.forEach(cat => { %>
+                                <option value="<%= cat.id %>" <%= empresa.categoria_id == cat.id ? 'selected' : '' %>><%= cat.nome %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Plano de Destaque</label>
+                        <select name="plano_id" id="planoSelect" class="w-full bg-white border border-amber-400 rounded-xl p-3 shadow-sm">
+                            <option value="1" <%= empresa.plano_id == 1 ? 'selected' : '' %>>Start (Grátis)</option>
+                            <option value="2" <%= empresa.plano_id == 2 ? 'selected' : '' %>>Plano 1 (Vitrine Premium)</option>
+                            <option value="3" <%= empresa.plano_id == 3 ? 'selected' : '' %>>Plano 2 (Patrocinado no Topo)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Status</label>
+                        <select name="status" class="w-full bg-slate-50 border rounded-xl p-3">
+                            <option value="ativo" <%= empresa.status == 'ativo' ? 'selected' : '' %>>Ativo</option>
+                            <option value="inativo" <%= empresa.status == 'inativo' ? 'selected' : '' %>>Inativo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- UPGRADE: GRID DE 3 COLUNAS COM O LINK MAPS -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">WhatsApp</label>
+                        <input type="text" name="whatsapp" value="<%= empresa.whatsapp || '' %>" class="w-full bg-slate-50 border rounded-xl p-3">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Endereço</label>
+                        <input type="text" name="endereco" value="<%= empresa.endereco || '' %>" class="w-full bg-slate-50 border rounded-xl p-3">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Link Google Maps</label>
+                        <input type="text" name="link_maps" value="<%= empresa.link_maps || '' %>" placeholder="https://maps.app.goo.gl/..." class="w-full bg-slate-50 border rounded-xl p-3 text-sm">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div><label class="block text-sm font-bold text-slate-700 mb-2">Site</label><input type="text" name="site" value="<%= empresa.site || '' %>" class="w-full bg-slate-50 border rounded-xl p-3"></div>
+                    <div><label class="block text-sm font-bold text-slate-700 mb-2">Instagram</label><input type="text" name="instagram" value="<%= empresa.instagram || '' %>" class="w-full bg-slate-50 border rounded-xl p-3"></div>
+                    <div><label class="block text-sm font-bold text-slate-700 mb-2">Facebook</label><input type="text" name="facebook" value="<%= empresa.facebook || '' %>" class="w-full bg-slate-50 border rounded-xl p-3"></div>
+                </div>
+
+                <!-- EXCLUSIVOS DOS PLANOS PREMIUM -->
+                <div id="premium-features" class="hidden space-y-6 pt-6 border-t border-slate-200">
+                    <h3 class="font-bold text-amber-600 mb-2"><i class="fas fa-crown"></i> Benefícios Premium</h3>
+                    
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Descrição Completa do Local</label>
+                        <textarea name="descricao" rows="4" placeholder="Escreva os diferenciais, serviços oferecidos e o que o cliente encontrará..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition"><%= locals.empresa && empresa.descricao ? empresa.descricao : '' %></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Foto de Capa Principal</label>
+                            <input type="file" name="foto" accept="image/*" class="w-full bg-slate-50 border rounded-xl p-2">
+                            <% if(empresa.imagem) { %>
+                                <p class="text-xs text-blue-600 mt-2"><i class="fas fa-check"></i> Imagem de capa salva.</p>
+                            <% } %>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Vídeo Promocional (Link do YouTube)</label>
+                            <input type="text" name="video_url" value="<%= empresa.video_url || '' %>" placeholder="https://www.youtube.com/watch?v=..." class="w-full bg-slate-50 border rounded-xl p-3 text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Galeria de Imagens (Sobrescreve as atuais)</label>
+                        <input type="file" name="galeria" accept="image/*" multiple class="w-full bg-amber-50 border border-amber-200 rounded-xl p-2 text-amber-800">
+                        <p class="text-xs text-slate-500 mt-2"><i class="fas fa-info-circle"></i> Segure o botão CTRL para selecionar até 5 fotos.</p>
+                        
+                        <% if(empresa.galeria) { %>
+                            <p class="text-xs text-blue-600 mt-2"><i class="fas fa-check"></i> Galeria com imagens salva.</p>
+                        <% } %>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-slate-900 hover:bg-amber-500 text-white py-4 rounded-xl font-bold transition mt-8">Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('planoSelect').addEventListener('change', function() {
+            const premiumBox = document.getElementById('premium-features');
+            premiumBox.style.display = (this.value === '2' || this.value === '3') ? 'block' : 'none';
+        });
+        document.getElementById('planoSelect').dispatchEvent(new Event('change'));
+    </script>
+</body>
+</html>
