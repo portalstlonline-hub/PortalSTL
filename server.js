@@ -8,6 +8,7 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Configurações do Express
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.set('view engine', 'ejs');
@@ -15,23 +16,26 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
+// Garantir que a pasta de uploads existe
 const pastaUploads = path.join(__dirname, 'public/uploads');
 if (!fs.existsSync(pastaUploads)) {
     fs.mkdirSync(pastaUploads, { recursive: true });
 }
 
+// Configuração do Multer (Armazenamento de Imagens)
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, 'public/uploads/'),
     filename: (req, file, cb) => cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname))
 });
 
-// 📸 UPGRADE: Agora aceitamos até 6 fotos na galeria!
+// 📸 UPGRADE: Limites de Galeria (1 Capa + 6 Galeria)
 const upload = multer({ storage: storage });
 const uploadConfig = upload.fields([
     { name: 'foto', maxCount: 1 }, 
     { name: 'galeria', maxCount: 6 } 
 ]);
 
+// Ligação à Base de Dados
 const db = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -41,10 +45,20 @@ const db = mysql.createPool({
     connectionLimit: 10
 });
 
+// Função Auxiliar: Criar URLs Amigáveis (Slugs)
+const gerarSlug = (texto) => {
+    return (texto || '').toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+        .replace(/ /g, '-')             // Troca espaços por hífens
+        .replace(/[^\w-]+/g, '');       // Remove caracteres especiais
+};
+
 // ==========================================
-// ROTAS PÚBLICAS
+// 🌍 ROTAS PÚBLICAS
 // ==========================================
 
+// Página Inicial
 app.get('/', async (req, res) => {
     try {
         const [categorias] = await db.promise().execute('SELECT * FROM categorias ORDER BY nome ASC');
@@ -52,45 +66,59 @@ app.get('/', async (req, res) => {
         const mostrarSucesso = req.query.sucesso === 'true';
         res.render('index', { title: 'Portal STL', categorias, patrocinados, sucesso: mostrarSucesso });
     } catch (err) { 
-        console.error('Erro na Home:', err);
-        res.status(500).send('Erro interno'); 
+        console.error('🚨 Erro na Home:', err);
+        res.status(500).send('Erro interno do servidor.'); 
     }
 });
 
+// Receção de Contactos / Cadastro Gratuito
 app.post('/contato', async (req, res) => {
     try {
         const { nome, categoria_id, whatsapp, endereco, link_maps, site, facebook, instagram } = req.body;
-        const slug = (nome || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
+        const slug = gerarSlug(nome);
         const query = `INSERT INTO empresas (categoria_id, plano_id, nome, slug, endereco, link_maps, whatsapp, site, facebook, instagram, status) VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, 'inativo')`;
         await db.promise().execute(query, [categoria_id, nome, slug, endereco || null, link_maps || null, whatsapp || null, site || null, facebook || null, instagram || null]);
         res.redirect('/?sucesso=true#anunciar');
     } catch (err) { 
+        console.error('🚨 Erro no Cadastro de Contacto:', err);
         res.redirect('/?sucesso=false#anunciar'); 
     }
 });
 
+// Página Explorar / Buscas
 app.get('/explorar', async (req, res) => {
     try {
         const categoriaFiltro = req.query.categoria; 
         const buscaTexto = req.query.busca;
         let queryEmpresas = 'SELECT e.*, c.nome as categoria_nome FROM empresas e LEFT JOIN categorias c ON e.categoria_id = c.id WHERE e.status = "ativo"';
         let params = [];
-        if (categoriaFiltro) { queryEmpresas += ' AND e.categoria_id = ?'; params.push(categoriaFiltro); }
+        
+        if (categoriaFiltro) { 
+            queryEmpresas += ' AND e.categoria_id = ?'; 
+            params.push(categoriaFiltro); 
+        }
+        
         if (buscaTexto) { 
             let termoLimpo = buscaTexto.trim();
+            // Truque SEO: Remove o 's' final para apanhar singulares e plurais se a palavra for maior que 3 letras
             if (termoLimpo.toLowerCase().endsWith('s') && termoLimpo.length > 3) termoLimpo = termoLimpo.slice(0, -1);
             const termo = `%${termoLimpo}%`;
             queryEmpresas += ' AND (e.nome LIKE ? OR c.nome LIKE ? OR c.palavras_chave LIKE ? OR e.descricao LIKE ?)'; 
             params.push(termo, termo, termo, termo); 
         }
+        
         queryEmpresas += ' ORDER BY e.plano_id DESC, RAND()';
+        
         const [locais] = await db.promise().execute(queryEmpresas, params);
         const [categorias] = await db.promise().execute('SELECT * FROM categorias ORDER BY nome ASC');
         res.render('listagem', { locais, categorias, categoriaAtual: categoriaFiltro, buscaAtual: buscaTexto });
-    } catch (err) { res.status(500).send('Erro interno'); }
+    } catch (err) { 
+        console.error('🚨 Erro no Explorar:', err);
+        res.status(500).send('Erro interno do servidor.'); 
+    }
 });
 
-// 🕵️‍♂️ UPGRADE SEO: Rota de detalhes agora traz o nome da categoria!
+// 🕵️‍♂️ Página de Detalhes da Empresa
 app.get('/local/:slug', async (req, res) => {
     try {
         const query = `
@@ -100,28 +128,35 @@ app.get('/local/:slug', async (req, res) => {
             WHERE e.slug = ? AND e.status = "ativo"
         `;
         const [empresas] = await db.promise().execute(query, [req.params.slug]);
+        
         if (empresas.length === 0) return res.status(404).send('Página não encontrada.');
         res.render('detalhes', { empresa: empresas[0] });
     } catch (erro) { 
-        console.error(erro);
-        res.status(500).send('Erro interno'); 
+        console.error('🚨 Erro na Página de Detalhes:', erro);
+        res.status(500).send('Erro interno do servidor.'); 
     }
 });
 
 // ==========================================
-// 🔒 SEGURANÇA
+// 🔒 SEGURANÇA E AUTENTICAÇÃO DO ADMIN
 // ==========================================
 const protegerAdmin = (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
-        res.setHeader('WWW-Authenticate', 'Basic realm="Acesso Restrito"');
-        return res.status(401).send('Acesso Negado.');
+        res.setHeader('WWW-Authenticate', 'Basic realm="Acesso Restrito ao Painel STL"');
+        return res.status(401).send('Acesso Negado. Identifique-se.');
     }
+    
     const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
-    if (auth[0] === 'daniel' && auth[1] === 'senha123') { 
+    
+    // Procura credenciais no .env, se não existirem usa as padrão de emergência
+    const adminUser = process.env.ADMIN_USER || 'daniel';
+    const adminPass = process.env.ADMIN_PASS || 'senha123';
+
+    if (auth[0] === adminUser && auth[1] === adminPass) { 
         next();
     } else {
-        res.setHeader('WWW-Authenticate', 'Basic realm="Acesso Restrito"');
+        res.setHeader('WWW-Authenticate', 'Basic realm="Acesso Restrito ao Painel STL"');
         return res.status(401).send('Credenciais inválidas.');
     }
 };
@@ -129,96 +164,150 @@ const protegerAdmin = (req, res, next) => {
 app.use('/admin', protegerAdmin);
 
 // ==========================================
-// ROTAS DO ADMIN
+// ⚙️ ROTAS DO ADMIN (PAINEL DE CONTROLO)
 // ==========================================
 
+// Dashboard Principal
 app.get('/admin', async (req, res) => {
     try {
         const [empresas] = await db.promise().execute(`SELECT empresas.*, categorias.nome as categoria_nome FROM empresas LEFT JOIN categorias ON empresas.categoria_id = categorias.id ORDER BY empresas.id DESC`);
         const [categoriasLista] = await db.promise().execute('SELECT * FROM categorias ORDER BY nome ASC');
         res.render('admin', { empresas, categoriasLista });
-    } catch (err) { res.status(500).send('Erro interno'); }
+    } catch (err) { 
+        console.error('🚨 Erro no Admin:', err);
+        res.status(500).send('Erro interno do servidor.'); 
+    }
 });
 
+// Excluir Empresa
 app.get('/admin/excluir/:id', async (req, res) => {
     try {
         await db.promise().execute('DELETE FROM empresas WHERE id = ?', [req.params.id]);
         res.redirect('/admin');
-    } catch (err) { res.status(500).send('Erro ao excluir empresa.'); }
+    } catch (err) { 
+        console.error('🚨 Erro ao excluir empresa:', err);
+        res.status(500).send('Erro ao excluir empresa.'); 
+    }
 });
 
+// Excluir Categoria
 app.get('/admin/categorias/excluir/:id', async (req, res) => {
     try {
         await db.promise().execute('DELETE FROM categorias WHERE id = ?', [req.params.id]);
         res.redirect('/admin');
-    } catch (err) { res.status(500).send('Erro ao excluir categoria.'); }
+    } catch (err) { 
+        console.error('🚨 Erro ao excluir categoria:', err);
+        res.status(500).send('Erro ao excluir categoria.'); 
+    }
 });
 
+// Atualizar Categoria (SEO)
 app.post('/admin/categorias/atualizar/:id', async (req, res) => {
     try {
         const { nome, palavras_chave } = req.body;
         await db.promise().execute('UPDATE categorias SET nome = ?, palavras_chave = ? WHERE id = ?', [nome, palavras_chave || null, req.params.id]);
         res.redirect('/admin');
-    } catch (err) { res.status(500).send('Erro ao atualizar categoria'); }
+    } catch (err) { 
+        console.error('🚨 Erro ao atualizar categoria:', err);
+        res.status(500).send('Erro ao atualizar categoria'); 
+    }
 });
 
+// Criar Nova Categoria
 app.post('/admin/categorias', async (req, res) => {
     try {
         const { nome_categoria } = req.body;
-        const slug = (nome_categoria || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
+        const slug = gerarSlug(nome_categoria);
         await db.promise().execute('INSERT IGNORE INTO categorias (nome, slug) VALUES (?, ?)', [nome_categoria, slug]);
         res.redirect('/admin');
-    } catch (err) { res.status(500).send('Erro ao criar categoria'); }
+    } catch (err) { 
+        console.error('🚨 Erro ao criar categoria:', err);
+        res.status(500).send('Erro ao criar categoria'); 
+    }
 });
 
+// Formulário de Nova Empresa
 app.get('/admin/nova', async (req, res) => {
     try {
         const [categorias] = await db.promise().execute('SELECT * FROM categorias ORDER BY nome ASC');
         res.render('nova', { categorias });
-    } catch (err) { res.status(500).send(err); }
+    } catch (err) { 
+        console.error('🚨 Erro a carregar nova empresa:', err);
+        res.status(500).send(err); 
+    }
 });
 
+// Processar Nova Empresa
 app.post('/admin/nova', uploadConfig, async (req, res) => {
     try {
         const { nome, categoria_id, descricao, endereco, link_maps, whatsapp, site, facebook, instagram, plano_id, status, video_url } = req.body;
-        const slug = (nome || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
+        const slug = gerarSlug(nome);
+        
         let imagemUrl = null;
         if (req.files && req.files['foto']) imagemUrl = `/uploads/${req.files['foto'][0].filename}`;
+        
         let galeriaJson = null;
         if (req.files && req.files['galeria']) galeriaJson = JSON.stringify(req.files['galeria'].map(f => `/uploads/${f.filename}`));
         
         const query = `INSERT INTO empresas (categoria_id, plano_id, nome, slug, descricao, endereco, link_maps, whatsapp, site, facebook, instagram, imagem, video_url, galeria, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         await db.promise().execute(query, [categoria_id, plano_id, nome, slug, descricao || null, endereco || null, link_maps || null, whatsapp || null, site || null, facebook || null, instagram || null, imagemUrl, video_url || null, galeriaJson, status]);
+        
         res.redirect('/admin');
     } catch (err) { 
-        console.error(err);
-        res.status(500).send('Erro ao salvar.'); 
+        console.error('🚨 Erro ao guardar nova empresa:', err);
+        res.status(500).send('Erro ao guardar.'); 
     }
 });
 
+// Formulário de Editar Empresa
 app.get('/admin/editar/:id', async (req, res) => {
     try {
         const [empresa] = await db.promise().execute('SELECT * FROM empresas WHERE id = ?', [req.params.id]);
         const [categorias] = await db.promise().execute('SELECT * FROM categorias ORDER BY nome ASC');
+        
+        if(empresa.length === 0) return res.status(404).send('Empresa não encontrada.');
+        
         res.render('editar', { empresa: empresa[0], categorias });
-    } catch (err) { res.status(500).send(err); }
+    } catch (err) { 
+        console.error('🚨 Erro a carregar edição:', err);
+        res.status(500).send(err); 
+    }
 });
 
+// Processar Edição de Empresa
 app.post('/admin/atualizar/:id', uploadConfig, async (req, res) => {
     try {
         const { nome, categoria_id, descricao, endereco, link_maps, whatsapp, site, facebook, instagram, plano_id, status, video_url } = req.body;
-        let query = 'UPDATE empresas SET categoria_id=?, nome=?, descricao=?, endereco=?, link_maps=?, whatsapp=?, site=?, facebook=?, instagram=?, plano_id=?, status=?, video_url=?';
-        let params = [categoria_id, nome, descricao || null, endereco || null, link_maps || null, whatsapp || null, site || null, facebook || null, instagram || null, plano_id, status, video_url || null];
-        if (req.files && req.files['foto']) { query += ', imagem=?'; params.push(`/uploads/${req.files['foto'][0].filename}`); }
-        if (req.files && req.files['galeria'] && req.files['galeria'].length > 0) { query += ', galeria=?'; params.push(JSON.stringify(req.files['galeria'].map(f => `/uploads/${f.filename}`))); }
+        // Atualiza o slug caso o nome mude
+        const slug = gerarSlug(nome);
+        
+        let query = 'UPDATE empresas SET categoria_id=?, nome=?, slug=?, descricao=?, endereco=?, link_maps=?, whatsapp=?, site=?, facebook=?, instagram=?, plano_id=?, status=?, video_url=?';
+        let params = [categoria_id, nome, slug, descricao || null, endereco || null, link_maps || null, whatsapp || null, site || null, facebook || null, instagram || null, plano_id, status, video_url || null];
+        
+        if (req.files && req.files['foto']) { 
+            query += ', imagem=?'; 
+            params.push(`/uploads/${req.files['foto'][0].filename}`); 
+        }
+        
+        if (req.files && req.files['galeria'] && req.files['galeria'].length > 0) { 
+            query += ', galeria=?'; 
+            params.push(JSON.stringify(req.files['galeria'].map(f => `/uploads/${f.filename}`))); 
+        }
+        
         query += ' WHERE id=?';
         params.push(req.params.id);
+        
         await db.promise().execute(query, params);
         res.redirect('/admin');
     } catch (err) { 
-        console.error(err);
+        console.error('🚨 Erro ao atualizar empresa:', err);
         res.status(500).send('Erro ao atualizar.'); 
     }
 });
 
-app.listen(port, () => console.log(`🚀 Servidor na porta ${port}`));
+// 🚀 Inicialização do Servidor
+app.listen(port, () => {
+    console.log(`\n=========================================`);
+    console.log(`🚀 Motor Central STL online na porta ${port}`);
+    console.log(`=========================================\n`);
+});
