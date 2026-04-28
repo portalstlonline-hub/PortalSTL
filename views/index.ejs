@@ -5,10 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>Portal STL - Guia comercial e Turístico de São Thomé das Letras</title>
-    <meta name="description" content="O guia comercial completo de São Thomé das Letras. Encontre empresas, pousadas, restaurantes, passeios, serviços e eventos na cidade mais mística do Brasil, a capital dos hippies.">
+    <meta name="description" content="Um guia comercial e turístico completo de São Thomé das Letras. Encontre empresas, hostéis, hostel, pousadas, restaurantes, passeios, serviços e eventos na cidade mais mística do Brasil, a capital dos hippies.">
     
-    <!-- 🚨 O SEU NOVO FAVICON 🚨 -->
-    <link rel="icon" type="image/png" href="/uploads/logo favicon.png">
+    <!-- 🚨 OPEN GRAPH (A Mágica para o WhatsApp e Redes Sociais) 🚨 -->
+    <meta property="og:title" content="Portal STL - São Thomé das Letras">
+    <meta property="og:description" content="Um guia comercial e turístico completo! Encontre empresas, serviços, hospedagens, restaurantes e eventos na cidade mais mística do Brasil.">
+    <meta property="og:url" content="https://portalsaothomedasletras.com.br/">
+    <!-- O WhatsApp exige o link completo e não lida bem com espaços, por isso o %20 -->
+    <meta property="og:image" content="https://portalsaothomedasletras.com.br/uploads/PORTAL%20STL%20logo.png">
+    <meta property="og:type" content="website">
+
+    <!-- 🚨 O SEU NOVO FAVICON (Corrigido para leitura com espaços) 🚨 -->
+    <link rel="icon" type="image/png" href="/uploads/logo%20favicon.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -131,9 +139,11 @@
         <div class="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-amber-500 opacity-10 blur-3xl translate-x-1/3 translate-y-1/3"></div>
         
         <div class="max-w-[1400px] mx-auto px-4 relative z-10">
-            <div class="text-center mb-12">
-                <h2 class="text-4xl md:text-5xl font-black mb-4">Escolha o seu plano</h2>
-                <p class="text-zinc-400 text-lg max-w-2xl mx-auto">Destaque o seu negócio para moradores e turistas que pesquisam sobre São Thomé das Letras.</p>
+            <div class="text-center mb-12 px-2">
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-black mb-4 tracking-tight">Cadastro</h2>
+                <p class="text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+                    Cadastre o seu negócio para moradores e turistas que pesquisam no <strong class="text-white">Google</strong> sobre São Thomé das Letras.
+                </p>
             </div>
 
             <% if (locals.sucesso) { %>
@@ -147,8 +157,19 @@
                 <!-- PLANO GRATUITO -->
                 <div class="w-full max-w-3xl mx-auto bg-zinc-900 p-8 md:p-10 rounded-3xl shadow-xl border border-zinc-800">
                     <div class="text-center mb-8">
-                        <h3 class="text-3xl font-bold mb-3 text-white">Plano Gratuito</h3>
-                        <p class="text-sm text-zinc-400 leading-relaxed max-w-xl mx-auto">Coloque a sua empresa ou serviço no mapa digital de São Thomé das Letras. O cadastro do plano básico é gratuito e será enviado para revisão da nossa equipe comercial.</p>
+                        <h3 class="text-3xl font-bold mb-3 text-white">Plano Start <span class="text-xl md:text-2xl font-medium text-amber-500">(Gratuito)</span></h3>
+                        <p class="text-sm text-zinc-400 leading-relaxed max-w-xl mx-auto mb-5">Coloque a sua empresa ou serviço no mapa digital de São Thomé das Letras. O cadastro do plano básico é gratuito e será enviado para revisão da nossa equipe comercial.</p>
+                        
+                        <div class="inline-block bg-zinc-800/80 border border-zinc-700/50 rounded-xl px-5 py-3 shadow-inner text-left space-y-2">
+                            <p class="text-xs text-zinc-300">
+                                <i class="fas fa-info-circle text-amber-500 w-4 text-center"></i> Já possui cadastro e quer alterar/apagar? 
+                                <a href="https://wa.me/5535991277497?text=Ol%C3%A1!%20J%C3%A1%20possuo%20um%20cadastro%20no%20Portal%20STL%20e%20gostaria%20de%20solicitar%20uma%20altera%C3%A7%C3%A3o%20ou%20exclus%C3%A3o." target="_blank" class="text-amber-400 hover:text-amber-300 font-bold underline transition ml-1">Clique aqui</a>
+                            </p>
+                            <p class="text-xs text-zinc-300 border-t border-zinc-700/50 pt-2">
+                                <i class="fas fa-tags text-amber-500 w-4 text-center"></i> A sua categoria não está na lista? 
+                                <a href="https://wa.me/5535991277497?text=Ol%C3%A1!%20Fui%20fazer%20o%20cadastro%20no%20Portal%20STL,%20mas%20a%20minha%20categoria%20n%C3%A3o%20est%C3%A1%20na%20lista.%20Podem%20adicionar?" target="_blank" class="text-amber-400 hover:text-amber-300 font-bold underline transition ml-1">Fale com o suporte</a>
+                            </p>
+                        </div>
                     </div>
 
                     <form action="/contato" method="POST" class="space-y-5">
@@ -223,7 +244,7 @@
                             </div>
                             
                             <ul class="text-base text-slate-600 space-y-5 mb-8 flex-grow font-medium">
-                                <li class="flex items-start gap-3"><i class="fas fa-check-circle text-green-500 mt-1 text-xl"></i> <span>Link personalizado exclusivo</span></li>
+                                <li class="flex items-start gap-3"><i class="fas fa-check-circle text-green-500 mt-1 text-xl"></i> <span>Destaque topo da pesquisa</span></li>
                                 <li class="flex items-start gap-3"><i class="fas fa-check-circle text-green-500 mt-1 text-xl"></i> <span>Foto de capa exclusiva</span></li>
                                 <li class="flex items-start gap-3"><i class="fas fa-check-circle text-green-500 mt-1 text-xl"></i> <span>Descrição completa</span></li>
                                 <li class="flex items-start gap-3"><i class="fas fa-check-circle text-green-500 mt-1 text-xl"></i> <span>6 imagens e 1 vídeo na galeria</span></li>
