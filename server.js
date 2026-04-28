@@ -305,6 +305,74 @@ app.post('/admin/atualizar/:id', uploadConfig, async (req, res) => {
     }
 });
 
+// ==========================================
+// 🤖 AUTOMAÇÃO: VARREDURA DO GOOGLE PLACES
+// ==========================================
+app.post('/admin/importar-google', async (req, res) => {
+    const { termo_busca, categoria_id } = req.body;
+    const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+
+    if (!apiKey || apiKey === 'AIzaSySuaChaveSecretaDoGoogleAqui') {
+        return res.status(400).send('<script>alert("Erro: Configure a GOOGLE_PLACES_API_KEY no .env"); window.location.href="/admin";</script>');
+    }
+
+    try {
+        // Usa a Nova API do Places (Text Search)
+        const url = 'https://places.googleapis.com/v1/places:searchText';
+        
+        // Foca a busca automaticamente em São Thomé das Letras
+        const requestBody = { 
+            textQuery: `${termo_busca} em São Thomé das Letras, MG` 
+        };
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Goog-Api-Key': apiKey,
+                // A MÁGICA DA ECONOMIA: Pede APENAS 3 campos!
+                'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.nationalPhoneNumber'
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+
+        if (!data.places || data.places.length === 0) {
+            return res.send('<script>alert("Nenhum local encontrado no Google com esse termo."); window.location.href="/admin";</script>');
+        }
+
+        let inseridos = 0;
+        let duplicados = 0;
+
+        for (const place of data.places) {
+            const nome = place.displayName?.text;
+            const endereco = place.formattedAddress;
+            // Limpa o telefone para ficar só números (ex: 35999999999)
+            const telefone = place.nationalPhoneNumber ? place.nationalPhoneNumber.replace(/\D/g, '') : null;
+            const slug = gerarSlug(nome);
+
+            // Verifica se a empresa já existe no banco (evita duplicação)
+            const [existe] = await db.promise().execute('SELECT id FROM empresas WHERE slug = ?', [slug]);
+
+            if (existe.length === 0) {
+                // Cadastra como Start (Plano 1) e INATIVO (Rascunho)
+                const query = `INSERT INTO empresas (categoria_id, plano_id, nome, slug, endereco, whatsapp, status) VALUES (?, 1, ?, ?, ?, ?, 'inativo')`;
+                await db.promise().execute(query, [categoria_id, nome, slug, endereco || null, telefone || null]);
+                inseridos++;
+            } else {
+                duplicados++;
+            }
+        }
+
+        res.send(`<script>alert("Varredura Concluída!\\n\\n✅ Adicionados: ${inseridos}\\n⚠️ Já existiam: ${duplicados}\\n\\nEles estão no painel como INATIVOS para sua revisão."); window.location.href="/admin";</script>`);
+
+    } catch (err) {
+        console.error('🚨 Erro na API do Google:', err);
+        res.status(500).send(`<script>alert("Erro na varredura: ${err.message}"); window.location.href="/admin";</script>`);
+    }
+});
+
 // 🚀 Inicialização do Servidor
 app.listen(port, () => {
     console.log(`\n=========================================`);
