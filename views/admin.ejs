@@ -100,7 +100,7 @@
                     <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Salvar em qual Categoria?</label>
                     <select name="categoria_id" class="w-full px-4 py-3 rounded-xl border-none focus:ring-2 focus:ring-amber-500 outline-none text-slate-900 font-medium shadow-inner" required>
                         <option value="">Selecione...</option>
-                        <% categorias.forEach(cat => { %>
+                        <% categoriasLista.forEach(cat => { %>
                             <option value="<%= cat.id %>"><%= cat.nome %></option>
                         <% }) %>
                     </select>
@@ -124,7 +124,7 @@
                     
                     <button onclick="toggleCategorias()" class="bg-white border border-slate-200 hover:border-amber-500 text-slate-700 hover:text-amber-600 px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-sm flex items-center gap-2">
                         <i class="fas fa-tags text-amber-500"></i> Categorias & SEO
-                        <span class="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded-full"><%= categorias.length %></span>
+                        <span class="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded-full"><%= categoriasLista.length %></span>
                         <i id="iconeCategorias" class="fas fa-chevron-down text-xs ml-1 transition-transform duration-300"></i>
                     </button>
                 </div>
@@ -148,7 +148,7 @@
                     </form>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <% categorias.forEach(cat => { %>
+                        <% categoriasLista.forEach(cat => { %>
                             <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 hover:shadow-md hover:border-amber-400 transition duration-300 group flex flex-col">
                                 <form action="/admin/categorias/atualizar/<%= cat.id %>" method="POST" class="flex flex-col h-full gap-4">
                                     <div>
