@@ -1,228 +1,139 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="bg-slate-50">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar <%= local.nome %> - Admin</title>
-    
-    <!-- FAVICON -->
-    <link rel="icon" type="image/png" href="/uploads/logo%20favicon.png">
-
+    <title>Editar: <%= empresa.nome %> - Portal STL</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Quill CSS para o editor de texto rico -->
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        .ql-editor { min-height: 200px; font-size: 16px; }
-        .ql-toolbar { border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem; background-color: #f8fafc; }
-        .ql-container { border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem; background-color: white; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body class="text-slate-800 font-sans p-6 md:p-10 max-w-5xl mx-auto">
+<body class="bg-slate-50 min-h-screen">
 
-    <div class="flex items-center justify-between mb-8">
-        <div>
-            <h1 class="text-3xl font-black text-slate-900">Editar Empresa</h1>
-            <p class="text-slate-500">Atualizando os dados de <strong class="text-amber-600"><%= local.nome %></strong></p>
-        </div>
-        <a href="/admin/painel" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg font-bold transition flex items-center gap-2">
-            <i class="fas fa-arrow-left"></i> Voltar
-        </a>
-    </div>
-
-    <!-- Formulário Principal -->
-    <form action="/admin/editar/<%= local.id %>" method="POST" enctype="multipart/form-data" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 space-y-8">
-        
-        <!-- Bloco 1: Informações Básicas -->
-        <div>
-            <h3 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2">
-                <i class="fas fa-info-circle text-amber-500"></i> Informações Básicas
-            </h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-bold text-slate-600 mb-1">Nome do Local/Empresa *</label>
-                    <input type="text" name="nome" value="<%= local.nome %>" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition" required>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-bold text-slate-600 mb-1">Categoria *</label>
-                    <select name="categoria_id" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition" required>
-                        <% categorias.forEach(cat => { %>
-                            <option value="<%= cat.id %>" <%= local.categoria_id == cat.id ? 'selected' : '' %>><%= cat.nome %></option>
-                        <% }) %>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-slate-600 mb-1">Plano de Destaque</label>
-                    <!-- 🚨 PASSO 1: O id="planoSelect" foi adicionado aqui 🚨 -->
-                    <select name="plano_id" id="planoSelect" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition">
-                        <option value="1" <%= local.plano_id == 1 ? 'selected' : '' %>>Start (Grátis)</option>
-                        <option value="2" <%= local.plano_id == 2 ? 'selected' : '' %>>Vitrine Premium</option>
-                        <option value="3" <%= local.plano_id == 3 ? 'selected' : '' %>>Patrocinado</option>
-                    </select>
-                </div>
+    <header class="bg-slate-900 text-white py-4 px-6 shadow-md sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <div class="text-xl font-black tracking-tight text-slate-100">
+                PORTAL<span class="text-amber-500">STL</span> <span class="text-slate-400 font-normal text-sm ml-2">| Edição</span>
             </div>
+            <a href="/admin" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 border border-slate-700">
+                <i class="fas fa-arrow-left"></i> Voltar ao Painel
+            </a>
         </div>
+    </header>
 
-        <!-- Bloco 2: Contactos e Localização -->
-        <div>
-            <h3 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2">
-                <i class="fas fa-map-marker-alt text-amber-500"></i> Contactos e Localização
-            </h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-bold text-slate-600 mb-1">Endereço Completo</label>
-                    <input type="text" name="endereco" value="<%= local.endereco %>" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-500 transition" placeholder="Ex: Rua Direita, 10 - Centro">
-                </div>
+    <main class="max-w-4xl mx-auto px-4 py-10">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-10">
+            <form action="/admin/atualizar/<%= empresa.id %>" method="POST" enctype="multipart/form-data" class="space-y-6">
                 
-                <div>
-                    <label class="block text-sm font-bold text-slate-600 mb-1">Link do Google Maps</label>
-                    <input type="url" name="link_maps" value="<%= local.link_maps %>" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-500 transition" placeholder="https://maps.app.goo.gl/...">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-slate-600 mb-1"><i class="fab fa-whatsapp text-green-500"></i> WhatsApp</label>
-                    <input type="text" name="whatsapp" value="<%= local.whatsapp %>" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-500 transition" placeholder="(35) 9...">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-slate-600 mb-1"><i class="fab fa-instagram text-pink-500"></i> Link do Instagram</label>
-                    <input type="url" name="instagram" value="<%= local.instagram %>" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-500 transition" placeholder="https://instagram.com/...">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-slate-600 mb-1"><i class="fab fa-facebook text-blue-500"></i> Link do Facebook</label>
-                    <input type="url" name="facebook" value="<%= local.facebook %>" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-500 transition" placeholder="https://facebook.com/...">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-slate-600 mb-1"><i class="fas fa-globe text-slate-500"></i> Site Oficial</label>
-                    <input type="url" name="site" value="<%= local.site %>" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-500 transition" placeholder="https://www.seusite.com.br">
-                </div>
-            </div>
-        </div>
-
-        <!-- 🚨 PASSO 2: A div com id="secaoMidia" a envolver o conteúdo Premium 🚨 -->
-        <div id="secaoMidia" class="transition-opacity duration-300">
-            <!-- Bloco 3: Mídia e Conteúdo (Premium/Patrocinado) -->
-            <div>
-                <h3 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2 mt-8">
-                    <i class="fas fa-camera text-amber-500"></i> Mídia e Galeria (Exclusivo Premium)
+                <h3 class="text-lg font-bold text-slate-900 mb-4 pb-2 border-b flex items-center gap-2">
+                    <i class="fas fa-info-circle text-amber-500"></i> Informações Principais
                 </h3>
                 
-                <div class="mb-6">
-                    <label class="block text-sm font-bold text-slate-600 mb-1">Descrição Completa</label>
-                    <!-- Campo escondido que guardará o HTML do Quill para enviar no formulário -->
-                    <input type="hidden" name="descricao" id="descricao_input" value="<%= local.descricao %>">
-                    <!-- Div onde o Quill Editor será montado -->
-                    <div id="editor-container"><%- local.descricao %></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Nome Comercial *</label>
+                        <input type="text" name="nome" value="<%= empresa.nome %>" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-amber-500 outline-none transition" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Categoria *</label>
+                        <select name="categoria_id" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-amber-500 outline-none transition" required>
+                            <% categorias.forEach(cat => { %>
+                                <option value="<%= cat.id %>" <%= cat.id === empresa.categoria_id ? 'selected' : '' %>><%= cat.nome %></option>
+                            <% }) %>
+                        </select>
+                    </div>
                 </div>
 
-                <div class="mb-6">
-                    <label class="block text-sm font-bold text-slate-600 mb-1">Link do Vídeo (YouTube)</label>
-                    <input type="url" name="video_url" value="<%= local.video_url %>" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-500 transition" placeholder="https://www.youtube.com/watch?v=...">
-                    <p class="text-xs text-slate-400 mt-1">Cole o link completo do vídeo do YouTube para aparecer na galeria.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Plano de Destaque</label>
+                        <!-- 🚨 INJEÇÃO 1: Adicionado id="planoSelect" aqui 🚨 -->
+                        <select name="plano_id" id="planoSelect" class="w-full px-4 py-3 rounded-xl border border-slate-300">
+                            <option value="1" <%= empresa.plano_id === 1 ? 'selected' : '' %>>Start (Grátis)</option>
+                            <option value="2" <%= empresa.plano_id === 2 ? 'selected' : '' %>>Premium</option>
+                            <option value="3" <%= empresa.plano_id === 3 ? 'selected' : '' %>>Patrocinado</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Status</label>
+                        <select name="status" class="w-full px-4 py-3 rounded-xl border border-slate-300">
+                            <option value="ativo" <%= empresa.status === 'ativo' ? 'selected' : '' %>>Ativo</option>
+                            <option value="inativo" <%= empresa.status === 'inativo' ? 'selected' : '' %>>Inativo</option>
+                        </select>
+                    </div>
                 </div>
 
-                <!-- Gestão de Imagem Principal (Capa) -->
-                <div class="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                    <label class="block text-sm font-bold text-slate-800 mb-2">Imagem de Capa Atual</label>
-                    <div class="flex items-center gap-4">
-                        <% if (local.imagem) { %>
-                            <div class="w-32 h-20 bg-slate-200 rounded-lg overflow-hidden border border-slate-300">
-                                <img src="<%= local.imagem %>" class="w-full h-full object-cover" alt="Capa">
-                            </div>
-                        <% } else { %>
-                            <div class="w-32 h-20 bg-slate-200 rounded-lg border border-slate-300 flex items-center justify-center text-slate-400 text-xs text-center p-2">
-                                Sem imagem de capa
-                            </div>
-                        <% } %>
-                        <div class="flex-grow">
-                            <label class="block text-sm font-bold text-slate-600 mb-1">Alterar Imagem de Capa (Opcional)</label>
-                            <input type="file" name="imagem_capa" accept="image/png, image/jpeg, image/webp" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 transition">
+                <!-- 🚨 INJEÇÃO 2: Div a envolver tudo o que é mídia 🚨 -->
+                <div id="secaoMidia" class="transition-opacity duration-300">
+                    <h3 class="text-lg font-bold text-slate-900 mt-8 mb-4 pb-2 border-b flex items-center gap-2">
+                        <i class="fas fa-camera text-amber-500"></i> Mídia e Galeria
+                    </h3>
+
+                    <div class="mb-5">
+                        <label class="block text-sm font-bold text-slate-700 mb-1">Descrição</label>
+                        <textarea name="descricao" rows="4" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-amber-500 outline-none transition"><%= empresa.descricao || '' %></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="bg-slate-50 p-5 rounded-xl border border-dashed border-slate-300">
+                            <label class="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                                <i class="fas fa-image text-slate-400"></i> Foto de Capa Principal
+                            </label>
+                            <% if(empresa.imagem) { %>
+                                <img src="<%= empresa.imagem %>" class="w-full h-32 object-cover rounded-lg mb-3 border border-slate-200">
+                            <% } %>
+                            <input type="file" name="foto" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-slate-200 file:text-slate-700 hover:file:bg-slate-300 transition cursor-pointer">
+                        </div>
+
+                        <div class="bg-amber-50 p-5 rounded-xl border border-dashed border-amber-300">
+                            <label class="block text-sm font-bold text-amber-800 mb-3 flex items-center gap-2">
+                                <i class="fas fa-images text-amber-500"></i> Galeria de Fotos (Até 6)
+                            </label>
+                            <input type="file" name="galeria" accept="image/*" multiple class="w-full text-sm text-amber-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-amber-500 file:text-white hover:file:bg-amber-600 transition cursor-pointer">
+                            <p class="text-[10px] text-amber-600 mt-3 font-semibold uppercase tracking-wider italic">
+                                <i class="fas fa-info-circle"></i> Selecione até 6 imagens segurando CTRL/CMD.
+                            </p>
                         </div>
                     </div>
-                </div>
+                </div> <!-- 🚨 Fim da INJEÇÃO 2 🚨 -->
 
-                <!-- Gestão da Galeria de Imagens -->
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                    <div class="flex justify-between items-center mb-4">
-                        <label class="block text-sm font-bold text-slate-800">Galeria de Imagens (Até 6 fotos)</label>
-                        <a href="/admin/galeria/<%= local.id %>" class="bg-slate-900 hover:bg-black text-white text-xs px-4 py-2 rounded-lg font-bold transition">
-                            <i class="fas fa-images"></i> Gerir Galeria
-                        </a>
-                    </div>
-                    <p class="text-xs text-slate-500 mb-4">A galeria é gerida numa página separada. Clique no botão acima para adicionar ou remover fotos extra.</p>
+                <div class="mt-10 pt-6 border-t flex flex-col gap-3">
+                    <button type="submit" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-4 rounded-xl transition shadow-md flex justify-center items-center gap-2">
+                        <i class="fas fa-save"></i> Salvar Alterações
+                    </button>
+                    <a href="/admin/excluir/<%= empresa.id %>" onclick="return confirm('ALERTA! Tem certeza que deseja apagar esta empresa definitivamente?')" class="block w-full bg-red-50 text-red-600 hover:bg-red-600 hover:text-white font-bold py-3.5 rounded-xl border border-red-200 transition text-center">
+                        <i class="fas fa-trash-alt mr-2"></i> Excluir Empresa
+                    </a>
                 </div>
-            </div>
-        </div> <!-- Fim da div secaoMidia -->
-
-        <!-- Bloco 4: Ações -->
-        <div class="pt-6 border-t border-slate-200 flex justify-end gap-4">
-            <a href="/admin/painel" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 px-6 rounded-xl transition">
-                Cancelar
-            </a>
-            <button type="submit" id="btnSalvar" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition">
-                <i class="fas fa-save mr-2"></i> Salvar Alterações
-            </button>
+            </form>
         </div>
+    </main>
 
-    </form>
-
-    <!-- Scripts para o Editor de Texto -->
-    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-    <script>
-        // Inicializa o Quill Editor
-        var quill = new Quill('#editor-container', {
-            theme: 'snow',
-            placeholder: 'Descreva os serviços, diferenciais e informações importantes da empresa...',
-            modules: {
-                toolbar: [
-                    ['bold', 'italic', 'underline'],
-                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                    [{ 'color': [] }, { 'background': [] }],
-                    ['clean']
-                ]
-            }
-        });
-
-        // Antes de submeter o formulário, passa o conteúdo do Quill para o input hidden
-        document.getElementById('btnSalvar').addEventListener('click', function(e) {
-            // Pegamos o HTML que o utilizador digitou no editor
-            var html = document.querySelector('#editor-container .ql-editor').innerHTML;
-            
-            // Se o utilizador apenas limpou o editor, o Quill deixa um <p><br></p>. 
-            // Limpamos isso para não ir lixo para o banco de dados.
-            if (html === '<p><br></p>') html = '';
-            
-            // Atribuímos ao input que realmente será enviado
-            document.getElementById('descricao_input').value = html;
-        });
-    </script>
-
-    <!-- 🚨 PASSO 3: O Feitiço do JavaScript para ocultar a Mídia no plano Start 🚨 -->
+    <!-- 🚨 INJEÇÃO 3: O feitiço para ocultar/mostrar 🚨 -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const planoSelect = document.getElementById('planoSelect');
             const secaoMidia = document.getElementById('secaoMidia');
 
             function atualizarVisibilidade() {
-                // O valor '1' corresponde ao Plano Start (Gratuito)
-                if (planoSelect.value === '1') {
-                    secaoMidia.style.display = 'none';
-                } else {
-                    secaoMidia.style.display = 'block';
+                if (planoSelect && secaoMidia) {
+                    // O valor '1' corresponde ao Plano Start (Gratuito)
+                    if (planoSelect.value === '1') {
+                        secaoMidia.style.display = 'none';
+                    } else {
+                        secaoMidia.style.display = 'block';
+                    }
                 }
             }
 
-            if(planoSelect && secaoMidia) {
-                // Executa assim que a página abre para configurar o estado inicial
-                atualizarVisibilidade();
-                
-                // Escuta sempre que você mudar a caixa de seleção
+            // Roda ao carregar a página
+            atualizarVisibilidade();
+            
+            // Fica de olho se o administrador mudar o plano no Select
+            if (planoSelect) {
                 planoSelect.addEventListener('change', atualizarVisibilidade);
             }
         });
