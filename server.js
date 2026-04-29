@@ -119,7 +119,7 @@ app.get('/explorar', async (req, res) => {
 });
 
 // 🕵️‍♂️ Página de Detalhes da Empresa
-app.get('/local/:slug', async (req, res) => {
+app.get('/:slug', async (req, res) => {
     try {
         const query = `
             SELECT e.*, c.nome as categoria_nome 
