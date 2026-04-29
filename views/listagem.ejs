@@ -8,6 +8,18 @@
     <meta name="description" content="Explore e encontre as melhores pousadas, restaurantes, passeios e serviços na cidade mágica de São Thomé das Letras. O guia comercial completo.">
     <meta name="author" content="Resultados Online">
     
+    <!-- 🚨 OPEN GRAPH (Para o WhatsApp puxar a sua Capa nova) 🚨 -->
+    <meta property="og:title" content="Explorar - Portal STL">
+    <meta property="og:description" content="Explore e encontre as melhores empresas, serviços e passeios na cidade mais mística do Brasil.">
+    <meta property="og:url" content="https://portalsaothomedasletras.com.br/explorar">
+    <meta property="og:image" content="https://portalsaothomedasletras.com.br/uploads/capa-compartilhamento.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
+
+    <!-- 🚨 FAVICON 🚨 -->
+    <link rel="icon" type="image/png" href="/uploads/logo%20favicon.png">
+
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-BDTY71XR8Q"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -28,13 +40,19 @@
 </head>
 <body class="bg-slate-50 flex flex-col min-h-screen">
     
+    <!-- HEADER OTIMIZADO -->
     <header class="w-full bg-white z-50 border-b border-slate-200 sticky top-0 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-            <a href="/" class="text-2xl font-black tracking-tight text-slate-900">
-                PORTAL<span class="text-amber-500">STL</span>
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <!-- Nova Logomarca -->
+            <a href="/" class="flex items-center">
+                <img src="/uploads/PORTAL STL logo.png" alt="Portal STL" class="h-9 md:h-11 w-auto object-contain">
             </a>
+            
+            <!-- Botão Anuncie Otimizado e Preto -->
             <div class="flex gap-4 items-center">
-                <a href="/#anunciar" class="hidden md:block text-sm font-bold text-amber-600 hover:text-amber-700 transition">Anuncie seu Negócio</a>
+                <a href="/#anunciar" class="bg-slate-900 hover:bg-black text-white text-xs md:text-sm font-bold px-5 md:px-6 py-2 md:py-2.5 rounded-full transition shadow-sm whitespace-nowrap">
+                    Anuncie
+                </a>
             </div>
         </div>
     </header>
@@ -43,17 +61,18 @@
         
         <% if (buscaAtual) { %>
             <div class="mb-8 border-b border-slate-200 pb-4">
-                <h2 class="text-2xl font-bold text-slate-800">Resultados para: <span class="text-amber-500">"<%= buscaAtual %>"</span></h2>
+                <h2 class="text-xl md:text-2xl font-bold text-slate-800">Resultados para: <span class="text-amber-500">"<%= buscaAtual %>"</span></h2>
                 <a href="/explorar" class="text-sm font-medium text-slate-500 hover:text-red-500 transition mt-2 inline-block"><i class="fas fa-times-circle"></i> Limpar busca</a>
             </div>
         <% } %>
 
+        <!-- Menu de Categorias Deslizante -->
         <div class="flex overflow-x-auto gap-3 pb-4 mb-8 no-scrollbar border-b border-slate-200">
-            <a href="/explorar" class="flex-shrink-0 <%= !categoriaAtual && !buscaAtual ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-slate-600 border-slate-200 hover:border-amber-500' %> border px-6 py-2.5 rounded-full text-sm font-bold transition shadow-sm">
+            <a href="/explorar" class="flex-shrink-0 <%= !categoriaAtual && !buscaAtual ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-slate-600 border-slate-200 hover:border-amber-500' %> border px-5 py-2 md:px-6 md:py-2.5 rounded-full text-sm font-bold transition shadow-sm">
                 Todas as Categorias
             </a>
             <% categorias.forEach(cat => { %>
-                <a href="/explorar?categoria=<%= cat.id %>" class="flex-shrink-0 <%= categoriaAtual == cat.id ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-slate-600 border-slate-200 hover:border-amber-500' %> border px-6 py-2.5 rounded-full text-sm font-bold transition shadow-sm">
+                <a href="/explorar?categoria=<%= cat.id %>" class="flex-shrink-0 <%= categoriaAtual == cat.id ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-slate-600 border-slate-200 hover:border-amber-500' %> border px-5 py-2 md:px-6 md:py-2.5 rounded-full text-sm font-bold transition shadow-sm">
                     <%= cat.nome %>
                 </a>
             <% }) %>
@@ -64,12 +83,14 @@
                 <% locais.forEach(local => { %>
                     <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 flex flex-col hover:shadow-xl transition duration-300 relative group <%= local.plano_id == 1 ? 'self-start' : 'h-full' %>">
                         
-                        <% if (local.plano_id == 3) { %>
-                            <div class="absolute top-3 left-3 z-10 bg-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wide flex items-center gap-1 shadow-md">
-                                <i class="fas fa-crown"></i> Patrocinado
+                        <!-- 🚨 UNIFICAÇÃO: Planos 2 e 3 agora são apenas "Premium" nesta página 🚨 -->
+                        <% if (local.plano_id >= 2) { %>
+                            <div class="absolute top-3 left-3 z-10 bg-slate-900/90 backdrop-blur-sm text-amber-500 text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wide flex items-center gap-1.5 shadow-md border border-slate-700">
+                                <i class="fas fa-star"></i> Premium
                             </div>
                         <% } %>
                         
+                        <!-- Capa visível APENAS para os Planos Pagantes (2 e 3) -->
                         <% if (local.plano_id >= 2) { %>
                         <div class="h-48 w-full bg-slate-900 relative overflow-hidden flex-shrink-0 flex items-center justify-center">
                             <% if (local.imagem) { %>
@@ -82,12 +103,13 @@
                         </div>
                         <% } %>
                         
-                        <div class="p-6 flex flex-col flex-grow">
+                        <div class="p-5 md:p-6 flex flex-col flex-grow">
                             <h3 class="font-extrabold text-xl text-slate-900 leading-tight"><%= local.nome %></h3>
                             <p class="text-slate-500 text-sm mt-2 line-clamp-2 min-h-[40px]">
                                 <i class="fas fa-map-marker-alt text-amber-500 mr-1"></i> <%= local.endereco || 'Endereço não informado' %>
                             </p>
                             
+                            <!-- Ícones de Contato Mínimos -->
                             <div class="flex gap-4 mt-4 text-slate-400 items-center">
                                 <a href="<%= local.link_maps ? local.link_maps : 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(local.nome + ' São Thomé das Letras') %>" target="_blank" class="hover:text-amber-500 transition" title="Ver no Mapa">
                                     <i class="fas fa-map-marked-alt text-lg"></i>
@@ -110,6 +132,7 @@
                                 <% } %>
                             </div>
 
+                            <!-- Botões Apenas para Planos VIP (O Botão do Plano Grátis foi REMOVIDO 🚀) -->
                             <% if (local.plano_id >= 2) { %>
                             <div class="mt-auto pt-6 flex flex-col gap-3">
                                 <a href="/local/<%= local.slug %>" class="w-full bg-slate-900 text-white font-bold py-3 rounded-xl text-sm shadow-sm hover:bg-amber-500 hover:text-slate-900 transition flex items-center justify-center gap-2">
@@ -122,32 +145,27 @@
                                     </a>
                                 <% } %>
                             </div>
-                            <% } else { %>
-                                <div class="mt-auto pt-6 flex flex-col gap-3">
-                                    <a href="/local/<%= local.slug %>" class="w-full bg-slate-100 text-slate-600 font-bold py-2.5 rounded-xl text-sm hover:bg-slate-200 transition flex items-center justify-center gap-2 border border-slate-200">
-                                        Ver Empresa
-                                    </a>
-                                </div>
                             <% } %>
+                            
                         </div>
                     </div>
                 <% }) %>
             <% } else { %>
-                <div class="col-span-full py-24 flex flex-col items-center text-center bg-white rounded-3xl border border-slate-100 shadow-sm">
-                    <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
-                        <i class="fas fa-search text-4xl text-slate-300"></i>
+                <div class="col-span-full py-24 flex flex-col items-center text-center bg-white rounded-3xl border border-slate-100 shadow-sm px-4">
+                    <div class="w-20 h-20 md:w-24 md:h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-search text-3xl md:text-4xl text-slate-300"></i>
                     </div>
-                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Nenhum local encontrado</h2>
-                    <p class="text-slate-500 max-w-md">Não encontramos nenhuma empresa com estes critérios. Tente buscar por outra categoria ou termo diferente.</p>
+                    <h2 class="text-xl md:text-2xl font-bold text-slate-800 mb-2">Nenhum local encontrado</h2>
+                    <p class="text-sm md:text-base text-slate-500 max-w-md">Não encontramos nenhuma empresa com estes critérios. Tente buscar por outra categoria ou termo diferente.</p>
                     <a href="/explorar" class="mt-6 bg-amber-500 text-white font-bold px-6 py-3 rounded-full hover:bg-amber-600 transition shadow-md">Limpar Filtros</a>
                 </div>
             <% } %>
         </div>
     </main>
 
-    <footer class="bg-white border-t border-slate-200 py-8 mt-auto">
+    <footer class="bg-white border-t border-slate-200 py-6 md:py-8 mt-auto">
         <div class="max-w-7xl mx-auto px-4 text-center">
-            <p class="text-slate-400 text-sm font-medium">© 2026 Portal STL. Uma iniciativa <strong class="text-slate-600">Resultados Online</strong>.</p>
+            <p class="text-slate-400 text-xs md:text-sm font-medium">© 2026 Portal STL. Uma iniciativa <strong class="text-slate-600">Resultados Online</strong>.</p>
         </div>
     </footer>
 
