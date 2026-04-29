@@ -118,13 +118,76 @@
             </form>
         </div>
 
-        <!-- TABELA DE EMPRESAS -->
+        <!-- TABELA DE EMPRESAS E ABA DE CATEGORIAS -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-12">
-            <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fas fa-list text-amber-500"></i> Diretório de Empresas
-                </h2>
+            
+            <!-- HEADER COMBINADO -->
+            <div class="p-6 border-b border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div class="flex flex-wrap items-center gap-4 w-full">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fas fa-list text-amber-500"></i> Diretório de Empresas
+                    </h2>
+                    
+                    <!-- 🚨 O BOTÃO DA NOVA ABA OCULTA 🚨 -->
+                    <button onclick="toggleCategorias()" class="bg-white border border-slate-200 hover:border-amber-500 text-slate-700 hover:text-amber-600 px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-sm flex items-center gap-2">
+                        <i class="fas fa-tags text-amber-500"></i> Categorias & SEO
+                        <span class="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded-full"><%= categoriasLista.length %></span>
+                        <i id="iconeCategorias" class="fas fa-chevron-down text-xs ml-1 transition-transform duration-300"></i>
+                    </button>
+                </div>
             </div>
+
+            <!-- 🚨 CONTEÚDO DA ABA DE CATEGORIAS (OCULTO POR PADRÃO) 🚨 -->
+            <div id="abaCategorias" class="hidden bg-slate-50/50 border-b border-slate-200 p-6 shadow-inner">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <!-- Formulário Nova Categoria -->
+                    <form action="/admin/categorias" method="POST" class="flex flex-col md:flex-row gap-4 mb-8">
+                        <div class="flex-grow">
+                            <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Adicionar Nova Categoria</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                    <i class="fas fa-folder-plus"></i>
+                                </div>
+                                <input type="text" name="nome_categoria" placeholder="Ex: Pousadas, Cachoeiras, Restaurantes..." class="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition font-medium" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="bg-slate-900 hover:bg-black text-white font-bold py-3 px-8 rounded-lg transition whitespace-nowrap shadow-md mt-auto">
+                            Registar Categoria
+                        </button>
+                    </form>
+
+                    <!-- Grelha de Categorias Existentes -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <% categoriasLista.forEach(cat => { %>
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 hover:shadow-md hover:border-amber-400 transition duration-300 group flex flex-col">
+                                <form action="/admin/categorias/atualizar/<%= cat.id %>" method="POST" class="flex flex-col h-full gap-4">
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 mb-1 block uppercase tracking-wider flex justify-between">
+                                            <span>Nome Público</span>
+                                            <span class="text-slate-300">ID: <%= cat.id %></span>
+                                        </label>
+                                        <input type="text" name="nome" value="<%= cat.nome %>" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-bold text-slate-800 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition" required>
+                                    </div>
+                                    <div class="flex-grow">
+                                        <label class="text-[10px] font-bold text-slate-400 mb-1 block uppercase tracking-wider"><i class="fas fa-search text-amber-500 mr-1"></i> Palavras-chave (Google SEO)</label>
+                                        <textarea name="palavras_chave" rows="2" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs text-slate-600 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none resize-none transition" placeholder="pousada, hotel, onde dormir..."><%= cat.palavras_chave || '' %></textarea>
+                                    </div>
+                                    <div class="flex justify-between items-center mt-2 pt-4 border-t border-slate-200">
+                                        <a href="/admin/categorias/excluir/<%= cat.id %>" onclick="return confirm('ATENÇÃO: Apagar esta categoria pode deixar empresas sem classificação. Tem certeza absoluta?')" class="text-slate-400 hover:text-red-600 text-xs font-bold px-2 py-2 rounded transition flex items-center gap-1">
+                                            <i class="fas fa-trash-alt"></i> Apagar
+                                        </a>
+                                        <button type="submit" class="bg-amber-100 text-amber-700 hover:bg-amber-500 hover:text-white font-bold py-2 px-4 rounded-lg transition text-xs shadow-sm flex items-center gap-1.5">
+                                            <i class="fas fa-save"></i> Guardar
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        <% }) %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INÍCIO DA TABELA -->
             <div class="overflow-x-auto custom-scrollbar">
                 <table class="w-full text-left border-collapse min-w-[800px]">
                     <thead>
@@ -202,63 +265,24 @@
             </div>
         </div>
 
-        <!-- GESTÃO DE CATEGORIAS (SEO) -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fas fa-tags text-amber-500"></i> Gestão de Categorias e SEO
-                </h2>
-                <span class="text-xs font-bold text-slate-500 bg-slate-200 px-3 py-1 rounded-full"><%= categoriasLista.length %> Ativas</span>
-            </div>
-            
-            <div class="p-6 bg-slate-50/50">
-                <!-- Nova Categoria -->
-                <form action="/admin/categorias" method="POST" class="flex flex-col md:flex-row gap-4 mb-8 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <div class="flex-grow">
-                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Adicionar Nova Categoria</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                <i class="fas fa-folder-plus"></i>
-                            </div>
-                            <input type="text" name="nome_categoria" placeholder="Ex: Pousadas, Cachoeiras, Restaurantes..." class="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition font-medium" required>
-                        </div>
-                    </div>
-                    <button type="submit" class="bg-slate-900 hover:bg-black text-white font-bold py-3 px-8 rounded-lg transition whitespace-nowrap shadow-md mt-auto">
-                        Registar Categoria
-                    </button>
-                </form>
-
-                <!-- Grelha de Categorias -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <% categoriasLista.forEach(cat => { %>
-                        <div class="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md hover:border-amber-400 transition duration-300 group flex flex-col">
-                            <form action="/admin/categorias/atualizar/<%= cat.id %>" method="POST" class="flex flex-col h-full gap-4">
-                                <div>
-                                    <label class="text-[10px] font-bold text-slate-400 mb-1 block uppercase tracking-wider flex justify-between">
-                                        <span>Nome Público</span>
-                                        <span class="text-slate-300">ID: <%= cat.id %></span>
-                                    </label>
-                                    <input type="text" name="nome" value="<%= cat.nome %>" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-bold text-slate-800 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition" required>
-                                </div>
-                                <div class="flex-grow">
-                                    <label class="text-[10px] font-bold text-slate-400 mb-1 block uppercase tracking-wider"><i class="fas fa-search text-amber-500 mr-1"></i> Palavras-chave (Google SEO)</label>
-                                    <textarea name="palavras_chave" rows="2" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs text-slate-600 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none resize-none transition" placeholder="pousada, hotel, onde dormir..."><%= cat.palavras_chave || '' %></textarea>
-                                </div>
-                                <div class="flex justify-between items-center mt-2 pt-4 border-t border-slate-100">
-                                    <a href="/admin/categorias/excluir/<%= cat.id %>" onclick="return confirm('ATENÇÃO: Apagar esta categoria pode deixar empresas sem classificação. Tem certeza absoluta?')" class="text-slate-400 hover:text-red-600 text-xs font-bold px-2 py-2 rounded transition flex items-center gap-1">
-                                        <i class="fas fa-trash-alt"></i> Apagar
-                                    </a>
-                                    <button type="submit" class="bg-amber-100 text-amber-700 hover:bg-amber-500 hover:text-white font-bold py-2 px-4 rounded-lg transition text-xs shadow-sm flex items-center gap-1.5">
-                                        <i class="fas fa-save"></i> Guardar
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    <% }) %>
-                </div>
-            </div>
-        </div>
-
     </main>
+
+    <!-- SCRIPT DA ABA DE CATEGORIAS -->
+    <script>
+        function toggleCategorias() {
+            const aba = document.getElementById('abaCategorias');
+            const icone = document.getElementById('iconeCategorias');
+            
+            if (aba.classList.contains('hidden')) {
+                // Abrir aba
+                aba.classList.remove('hidden');
+                icone.classList.add('rotate-180');
+            } else {
+                // Fechar aba
+                aba.classList.add('hidden');
+                icone.classList.remove('rotate-180');
+            }
+        }
+    </script>
 </body>
 </html>
