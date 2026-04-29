@@ -10,9 +10,16 @@
     
     <!-- OPEN GRAPH (Para partilhas em Redes Sociais/WhatsApp) -->
     <meta property="og:title" content="<%= empresa.nome %> | Portal STL">
-    <meta property="og:description" content="Descubra tudo sobre este local em São Thomé das Letras.">
-    <meta property="og:image" content="<%= empresa.imagem || '/img/default-share.jpg' %>">
+    <meta property="og:description" content="<%= empresa.descricao ? empresa.descricao.substring(0, 160) : 'Descubra tudo sobre este local em São Thomé das Letras.' %>">
+    
+    <!-- 🚨 O SEGREDO DO WHATSAPP (URL ABSOLUTA PARA A CAPA DA EMPRESA) 🚨 -->
+    <meta property="og:image" content="https://portalsaothomedasletras.com.br<%= empresa.imagem ? empresa.imagem : '/uploads/capa-compartilhamento.png' %>">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="og:type" content="website">
+
+    <!-- 🚨 FAVICON 🚨 -->
+    <link rel="icon" type="image/png" href="/uploads/logo%20favicon.png">
 
     <!-- 🕵️‍♂️ GOOGLE ANALYTICS 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-BDTY71XR8Q"></script>
@@ -33,16 +40,18 @@
 <body class="bg-slate-50 text-slate-900">
 
     <!-- HEADER / NAV -->
-    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100 shadow-sm">
+    <nav class="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 shadow-sm transition-all duration-300">
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-            <a href="/" class="text-xl font-black tracking-tighter text-slate-900">
-                PORTAL<span class="text-amber-500">STL</span>
+            <!-- 🚨 A SUA NOVA LOGOMARCA 🚨 -->
+            <a href="/" class="flex items-center">
+                <img src="/uploads/PORTAL STL logo.png" alt="Portal STL" class="h-9 md:h-11 w-auto object-contain">
             </a>
             <div class="flex items-center gap-4">
                 <a href="/explorar" class="text-sm font-bold text-slate-600 hover:text-amber-600 transition flex items-center gap-1">
                     <i class="fas fa-search"></i> Explorar
                 </a>
-                <a href="/#anunciar" class="bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold px-5 py-2 rounded-full transition shadow-sm hidden sm:block">
+                <!-- 🚨 BOTÃO ANUNCIE PRETO 🚨 -->
+                <a href="/#anunciar" class="bg-slate-900 hover:bg-black text-white text-xs md:text-sm font-bold px-5 md:px-6 py-2 md:py-2.5 rounded-full transition shadow-sm whitespace-nowrap">
                     Anuncie
                 </a>
             </div>
@@ -198,9 +207,8 @@
 
     <footer class="bg-white border-t border-slate-100 py-10 mt-20">
         <div class="max-w-6xl mx-auto px-4 text-center flex flex-col items-center">
-            <div class="text-xl font-black tracking-tight text-slate-300 mb-2">
-                PORTAL<span class="text-slate-200">STL</span>
-            </div>
+            <!-- 🚨 Rodapé com Logo em vez de Texto (Opcional, mas dá mais autoridade) 🚨 -->
+            <img src="/uploads/PORTAL STL logo.png" alt="Portal STL" class="h-8 md:h-10 w-auto object-contain grayscale opacity-40 mb-3 hover:grayscale-0 hover:opacity-100 transition duration-300">
             <p class="text-slate-400 text-sm font-medium">© 2026. Desenvolvido com <i class="fas fa-heart text-red-400 mx-1"></i> por Resultados Online.</p>
         </div>
     </footer>
