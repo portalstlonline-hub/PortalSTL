@@ -59,12 +59,36 @@
 
     <main class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
         
-        <% if (buscaAtual) { %>
-            <div class="mb-8 border-b border-slate-200 pb-4">
-                <h2 class="text-xl md:text-2xl font-bold text-slate-800">Resultados para: <span class="text-amber-500">"<%= buscaAtual %>"</span></h2>
-                <a href="/explorar" class="text-sm font-medium text-slate-500 hover:text-red-500 transition mt-2 inline-block"><i class="fas fa-times-circle"></i> Limpar busca</a>
-            </div>
-        <% } %>
+        <!-- 🚨 NOVA BARRA DE BUSCA (Estilo Home) 🚨 -->
+        <div class="mb-8 flex flex-col items-center">
+            <form action="/explorar" method="GET" class="w-full max-w-2xl bg-white flex items-center p-2 rounded-full shadow-md border border-slate-200 transition-all focus-within:ring-4 focus-within:ring-amber-500/20">
+                <div class="pl-4 md:pl-5 text-slate-400">
+                    <i class="fas fa-search text-lg"></i>
+                </div>
+                
+                <!-- Preserva a categoria atual na busca para filtro cruzado -->
+                <% if (locals.categoriaAtual) { %>
+                    <input type="hidden" name="categoria" value="<%= categoriaAtual %>">
+                <% } %>
+                
+                <input type="text" name="busca" value="<%= locals.buscaAtual ? buscaAtual : '' %>" placeholder="Pizzarias, Pousadas, Cachoeiras..." class="w-full py-3 px-3 md:px-4 bg-transparent text-slate-700 text-base focus:outline-none placeholder-slate-400" required>
+                
+                <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm md:text-base py-3 px-6 md:px-8 rounded-full transition shadow-sm whitespace-nowrap">
+                    Buscar
+                </button>
+            </form>
+
+            <!-- Título de Resultados e Limpar Busca -->
+            <% if (locals.buscaAtual) { %>
+                <div class="w-full max-w-2xl mt-5 flex justify-between items-center px-4 border-b border-slate-100 pb-3">
+                    <h2 class="text-lg md:text-xl font-bold text-slate-800">Resultados para: <span class="text-amber-500">"<%= buscaAtual %>"</span></h2>
+                    <!-- Limpa a busca de texto, mas mantém na mesma categoria se houver -->
+                    <a href="/explorar<%= locals.categoriaAtual ? '?categoria=' + categoriaAtual : '' %>" class="text-sm font-medium text-slate-500 hover:text-red-500 transition flex items-center gap-1 bg-slate-100 hover:bg-red-50 px-3 py-1.5 rounded-full">
+                        <i class="fas fa-times-circle"></i> Limpar Busca
+                    </a>
+                </div>
+            <% } %>
+        </div>
 
         <!-- Menu de Categorias Deslizante -->
         <div class="flex overflow-x-auto gap-3 pb-4 mb-8 no-scrollbar border-b border-slate-200">
