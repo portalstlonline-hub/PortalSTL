@@ -100,7 +100,6 @@ app.get('/explorar', async (req, res) => {
         
         if (buscaTexto) { 
             let termoLimpo = buscaTexto.trim();
-            // Truque SEO: Remove o 's' final para apanhar singulares e plurais se a palavra for maior que 3 letras
             if (termoLimpo.toLowerCase().endsWith('s') && termoLimpo.length > 3) termoLimpo = termoLimpo.slice(0, -1);
             const termo = `%${termoLimpo}%`;
             queryEmpresas += ' AND (e.nome LIKE ? OR c.nome LIKE ? OR c.palavras_chave LIKE ? OR e.descricao LIKE ?)'; 
@@ -114,25 +113,6 @@ app.get('/explorar', async (req, res) => {
         res.render('listagem', { locais, categorias, categoriaAtual: categoriaFiltro, buscaAtual: buscaTexto });
     } catch (err) { 
         console.error('🚨 Erro no Explorar:', err);
-        res.status(500).send('Erro interno do servidor.'); 
-    }
-});
-
-// 🕵️‍♂️ Página de Detalhes da Empresa
-app.get('/:slug', async (req, res) => {
-    try {
-        const query = `
-            SELECT e.*, c.nome as categoria_nome 
-            FROM empresas e 
-            LEFT JOIN categorias c ON e.categoria_id = c.id 
-            WHERE e.slug = ? AND e.status = "ativo"
-        `;
-        const [empresas] = await db.promise().execute(query, [req.params.slug]);
-        
-        if (empresas.length === 0) return res.status(404).send('Página não encontrada.');
-        res.render('detalhes', { empresa: empresas[0] });
-    } catch (erro) { 
-        console.error('🚨 Erro na Página de Detalhes:', erro);
         res.status(500).send('Erro interno do servidor.'); 
     }
 });
@@ -320,7 +300,6 @@ app.post('/admin/importar-google', async (req, res) => {
         // Usa a Nova API do Places (Text Search)
         const url = 'https://places.googleapis.com/v1/places:searchText';
         
-        // Foca a busca automaticamente em São Thomé das Letras
         const requestBody = { 
             textQuery: `${termo_busca} em São Thomé das Letras, MG` 
         };
@@ -330,7 +309,6 @@ app.post('/admin/importar-google', async (req, res) => {
             headers: {
                 'Content-Type': 'application/json',
                 'X-Goog-Api-Key': apiKey,
-                // A MÁGICA DA ECONOMIA: Pede APENAS 3 campos!
                 'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.nationalPhoneNumber'
             },
             body: JSON.stringify(requestBody)
@@ -348,15 +326,12 @@ app.post('/admin/importar-google', async (req, res) => {
         for (const place of data.places) {
             const nome = place.displayName?.text;
             const endereco = place.formattedAddress;
-            // Limpa o telefone para ficar só números (ex: 35999999999)
             const telefone = place.nationalPhoneNumber ? place.nationalPhoneNumber.replace(/\D/g, '') : null;
             const slug = gerarSlug(nome);
 
-            // Verifica se a empresa já existe no banco (evita duplicação)
             const [existe] = await db.promise().execute('SELECT id FROM empresas WHERE slug = ?', [slug]);
 
             if (existe.length === 0) {
-                // Cadastra como Start (Plano 1) e INATIVO (Rascunho)
                 const query = `INSERT INTO empresas (categoria_id, plano_id, nome, slug, endereco, whatsapp, status) VALUES (?, 1, ?, ?, ?, ?, 'inativo')`;
                 await db.promise().execute(query, [categoria_id, nome, slug, endereco || null, telefone || null]);
                 inseridos++;
@@ -370,6 +345,29 @@ app.post('/admin/importar-google', async (req, res) => {
     } catch (err) {
         console.error('🚨 Erro na API do Google:', err);
         res.status(500).send(`<script>alert("Erro na varredura: ${err.message}"); window.location.href="/admin";</script>`);
+    }
+});
+
+// ==========================================
+// 🚨 ROTA DA "URL LIMPA" (DEVE FICAR NO FUNDO!)
+// ==========================================
+// Como não há '/local/', o servidor testa TUDO aqui. 
+// Por isso, deve vir depois de '/admin', '/explorar', etc.
+app.get('/:slug', async (req, res) => {
+    try {
+        const query = `
+            SELECT e.*, c.nome as categoria_nome 
+            FROM empresas e 
+            LEFT JOIN categorias c ON e.categoria_id = c.id 
+            WHERE e.slug = ? AND e.status = "ativo"
+        `;
+        const [empresas] = await db.promise().execute(query, [req.params.slug]);
+        
+        if (empresas.length === 0) return res.status(404).send('Página não encontrada.');
+        res.render('detalhes', { empresa: empresas[0] });
+    } catch (erro) { 
+        console.error('🚨 Erro na Página de Detalhes:', erro);
+        res.status(500).send('Erro interno do servidor.'); 
     }
 });
 
