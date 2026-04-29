@@ -124,11 +124,32 @@
                     </section>
                 <% } } %>
 
-                <!-- Vídeo YouTube -->
-                <% if(empresa.video_url) { %>
+                <!-- 🚨 VÍDEO CAMALEÃO (YouTube, FB, Insta, Vimeo) 🚨 -->
+                <% if(empresa.video_url) { 
+                    let rawUrl = empresa.video_url.trim();
+                    let finalUrl = rawUrl;
+                    
+                    if (rawUrl.includes('youtube.com/watch?v=')) {
+                        finalUrl = rawUrl.replace('watch?v=', 'embed/');
+                        if(finalUrl.includes('&')) finalUrl = finalUrl.split('&')[0]; // Remove parâmetros extras
+                    } else if (rawUrl.includes('youtu.be/')) {
+                        let yId = rawUrl.split('youtu.be/')[1].split('?')[0];
+                        finalUrl = 'https://www.youtube.com/embed/' + yId;
+                    } else if (rawUrl.includes('instagram.com/p/') || rawUrl.includes('instagram.com/reel/')) {
+                        let cleanUrl = rawUrl.split('?')[0];
+                        if(!cleanUrl.endsWith('/')) cleanUrl += '/';
+                        finalUrl = cleanUrl + 'embed';
+                    } else if (rawUrl.includes('facebook.com')) {
+                        finalUrl = 'https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent(rawUrl) + '&show_text=false';
+                    } else if (rawUrl.includes('vimeo.com/')) {
+                        let vId = rawUrl.split('vimeo.com/')[1].split('?')[0];
+                        finalUrl = 'https://player.vimeo.com/video/' + vId;
+                    }
+                %>
                     <section class="bg-slate-900 p-2 rounded-3xl overflow-hidden shadow-xl border border-slate-800">
-                        <div class="aspect-video rounded-2xl overflow-hidden">
-                            <iframe class="w-full h-full" src="<%= empresa.video_url.replace('watch?v=', 'embed/') %>" frameborder="0" allowfullscreen></iframe>
+                        <!-- Fundo preto e centralização para acomodar vídeos verticais (Insta/Reels) sem distorcer -->
+                        <div class="aspect-video rounded-2xl overflow-hidden bg-black flex justify-center items-center">
+                            <iframe class="w-full h-full" src="<%= finalUrl %>" frameborder="0" scrolling="no" allowtransparency="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe>
                         </div>
                     </section>
                 <% } %>
@@ -201,6 +222,27 @@
                 </div>
                 <% } %>
 
+                <!-- 🚨 CARTÃO DE COMPARTILHAMENTO (Boca a Boca Digital) 🚨 -->
+                <div class="bg-white rounded-3xl p-6 shadow-xl border border-slate-100 mt-6">
+                    <h3 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2">
+                        <i class="fas fa-share-nodes text-amber-500"></i> Compartilhar Local
+                    </h3>
+                    <div class="flex gap-3">
+                        <!-- WhatsApp -->
+                        <button onclick="compartilharWhatsApp()" class="flex-1 bg-[#25D366] hover:bg-[#1da851] text-white py-3.5 rounded-xl transition shadow-md flex items-center justify-center gap-2" title="Compartilhar no WhatsApp">
+                            <i class="fab fa-whatsapp text-xl"></i>
+                        </button>
+                        <!-- Facebook -->
+                        <button onclick="compartilharFacebook()" class="flex-1 bg-[#1877F2] hover:bg-[#166fe5] text-white py-3.5 rounded-xl transition shadow-md flex items-center justify-center gap-2" title="Compartilhar no Facebook">
+                            <i class="fab fa-facebook-f text-xl"></i>
+                        </button>
+                        <!-- Copiar Link -->
+                        <button onclick="copiarLink()" id="btnCopiar" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3.5 rounded-xl transition shadow-sm flex items-center justify-center gap-2" title="Copiar Link">
+                            <i class="fas fa-link text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
             </div>
         </div>
     </main>
@@ -236,6 +278,37 @@
         document.addEventListener('keydown', function(event){
             if(event.key === "Escape") fecharLightbox();
         });
+
+        // 🚨 FUNÇÕES MÁGICAS DE COMPARTILHAMENTO 🚨
+        function compartilharWhatsApp() {
+            const url = encodeURIComponent(window.location.href);
+            // Mensagem persuasiva já pronta para o turista
+            const texto = encodeURIComponent(`Olha esse lugar incrível que encontrei no Portal STL: <%= empresa.nome %>\n\n`);
+            window.open(`https://api.whatsapp.com/send?text=${texto}${url}`, '_blank');
+        }
+
+        function compartilharFacebook() {
+            const url = encodeURIComponent(window.location.href);
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+        }
+
+        function copiarLink() {
+            // Método à prova de falhas para garantir a cópia em qualquer celular
+            const tempInput = document.createElement("input");
+            tempInput.value = window.location.href;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            
+            // Efeito visual (UX) mudando o ícone para um Visto Verde
+            const btn = document.getElementById('btnCopiar');
+            const iconOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check text-xl text-emerald-500"></i>';
+            setTimeout(() => {
+                btn.innerHTML = iconOriginal;
+            }, 2000); // Volta ao normal após 2 segundos
+        }
     </script>
 
 </body>
