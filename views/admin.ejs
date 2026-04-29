@@ -116,8 +116,9 @@
 
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-12">
             
-            <div class="p-6 border-b border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div class="flex flex-wrap items-center gap-4 w-full">
+            <!-- 🚨 HEADER COMBINADO COM BARRA DE PESQUISA 🚨 -->
+            <div class="p-6 border-b border-slate-100 bg-slate-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex flex-wrap items-center gap-4">
                     <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
                         <i class="fas fa-list text-amber-500"></i> Diretório de Empresas
                     </h2>
@@ -127,6 +128,14 @@
                         <span class="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded-full"><%= categoriasLista.length %></span>
                         <i id="iconeCategorias" class="fas fa-chevron-down text-xs ml-1 transition-transform duration-300"></i>
                     </button>
+                </div>
+
+                <!-- 🚨 BARRA DE PESQUISA DINÂMICA 🚨 -->
+                <div class="relative w-full md:w-72 lg:w-96">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <input type="text" id="filtroEmpresas" onkeyup="filtrarTabela()" placeholder="Buscar empresa, morada ou status..." class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition text-sm font-medium text-slate-700 shadow-sm bg-white">
                 </div>
             </div>
 
@@ -178,7 +187,7 @@
             </div>
 
             <div class="overflow-x-auto custom-scrollbar">
-                <table class="w-full text-left border-collapse min-w-[800px]">
+                <table class="w-full text-left border-collapse min-w-[800px]" id="tabelaEmpresas">
                     <thead>
                         <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
                             <th class="p-4 font-bold w-16 text-center">ID</th>
@@ -201,7 +210,7 @@
                             </tr>
                         <% } %>
                         <% empresas.forEach(emp => { %>
-                        <tr class="hover:bg-slate-50 transition group">
+                        <tr class="hover:bg-slate-50 transition group linha-empresa">
                             <td class="p-4 text-center text-slate-400 font-bold text-sm">
                                 #<%= emp.id %>
                             </td>
@@ -257,18 +266,36 @@
     </main>
 
     <script>
+        // Função para mostrar/esconder Aba de Categorias
         function toggleCategorias() {
             const aba = document.getElementById('abaCategorias');
             const icone = document.getElementById('iconeCategorias');
             
             if (aba.classList.contains('hidden')) {
-                // Abrir aba
                 aba.classList.remove('hidden');
                 icone.classList.add('rotate-180');
             } else {
-                // Fechar aba
                 aba.classList.add('hidden');
                 icone.classList.remove('rotate-180');
+            }
+        }
+
+        // 🚨 NOVA FUNÇÃO: Filtro em Tempo Real 🚨
+        function filtrarTabela() {
+            const input = document.getElementById("filtroEmpresas");
+            const filter = input.value.toLowerCase();
+            const tabela = document.getElementById("tabelaEmpresas");
+            const linhas = tabela.getElementsByClassName("linha-empresa");
+
+            for (let i = 0; i < linhas.length; i++) {
+                // Pega todo o texto da linha (inclui nome, ID, morada, status...)
+                let textoLinha = linhas[i].textContent || linhas[i].innerText;
+                
+                if (textoLinha.toLowerCase().indexOf(filter) > -1) {
+                    linhas[i].style.display = ""; // Mostra se bater com a busca
+                } else {
+                    linhas[i].style.display = "none"; // Esconde se não bater
+                }
             }
         }
     </script>
