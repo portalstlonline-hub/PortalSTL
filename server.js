@@ -76,7 +76,8 @@ app.post('/contato', async (req, res) => {
     try {
         const { nome, categoria_id, whatsapp, endereco, link_maps, site, facebook, instagram } = req.body;
         const slug = gerarSlug(nome);
-        const query = `INSERT INTO empresas (categoria_id, plano_id, nome, slug, endereco, link_maps, whatsapp, site, facebook, instagram, status) VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, 'inativo')`;
+        // 🚨 UPGRADE COMERCIAL: Mudou de 'inativo' para 'aprovacao'
+        const query = `INSERT INTO empresas (categoria_id, plano_id, nome, slug, endereco, link_maps, whatsapp, site, facebook, instagram, status) VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, 'aprovacao')`;
         await db.promise().execute(query, [categoria_id, nome, slug, endereco || null, link_maps || null, whatsapp || null, site || null, facebook || null, instagram || null]);
         res.redirect('/?sucesso=true#anunciar');
     } catch (err) { 
