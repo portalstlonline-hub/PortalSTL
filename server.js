@@ -23,11 +23,10 @@ if (!fs.existsSync(pastaUploads)) {
     fs.mkdirSync(pastaUploads, { recursive: true });
 }
 
-// 🔐 CONFIGURAÇÃO DO CLOUDINARY (Lendo do cofre do Render)
+// 🔐 CONFIGURAÇÃO DO CLOUDINARY (A BALA DE PRATA)
+// O sistema lê automaticamente a chave mestra (CLOUDINARY_URL) do cofre do Render
 cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
+    secure: true
 });
 
 // ☁️ CONFIGURAÇÃO DO ARMAZENAMENTO NA NUVEM
@@ -384,6 +383,6 @@ app.get('/:slug', async (req, res) => {
 app.listen(port, () => {
     console.log(`\n=========================================`);
     console.log(`🚀 Motor Central STL online na porta ${port}`);
-    console.log(`☁️ Cloudinary Ativado! Imagens salvas de forma persistente.`);
+    console.log(`☁️ Cloudinary Ativado e Blindado com a Chave Mestra!`);
     console.log(`=========================================\n`);
 });
