@@ -160,6 +160,21 @@ app.use('/admin', protegerAdmin);
 // ⚙️ ROTAS DO ADMIN (PAINEL DE CONTROLE)
 // ==========================================
 
+// 🚀 ROTA SECRETA: Injeção direta para criar a coluna de acessos sem precisar do phpMyAdmin
+app.get('/admin/criar-coluna-acessos', async (req, res) => {
+    try {
+        await db.promise().execute('ALTER TABLE empresas ADD COLUMN acessos INT DEFAULT 0');
+        res.send('<div style="text-align:center; margin-top:50px; font-family:sans-serif;"><h1>✅ Rota Secreta Executada!</h1><p>A coluna <strong>acessos</strong> foi injetada com sucesso na tabela empresas lá na Hostinger!</p><a href="/admin" style="background:#22c55e; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">Ir para o Painel Admin</a></div>');
+    } catch (err) {
+        console.error('🚨 Erro na rota secreta:', err);
+        // Se o erro disser que a coluna já existe, ele avisa de forma amigável
+        if (err.code === 'ER_DUP_FIELDNAME') {
+            return res.send('<div style="text-align:center; margin-top:50px; font-family:sans-serif; color:#eab308;"><h1>⚠️ Coluna já existe!</h1><p>A coluna <strong>acessos</strong> já foi criada anteriormente na base de dados.</p><a href="/admin" style="background:#eab308; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">Ir para o Painel Admin</a></div>');
+        }
+        res.status(500).send(`<h1>❌ Erro na injeção SQL:</h1><p>${err.message}</p>`);
+    }
+});
+
 // Dashboard Principal
 app.get('/admin', async (req, res) => {
     try {
@@ -363,6 +378,9 @@ app.post('/admin/importar-google', async (req, res) => {
 // ==========================================
 app.get('/:slug', async (req, res) => {
     try {
+        // 📊 REGISTO DE ACESSO: Incrementa o contador de visualizações na base de dados automaticamente
+        await db.promise().execute('UPDATE empresas SET acessos = acessos + 1 WHERE slug = ? AND status = "ativo"', [req.params.slug]);
+
         const query = `
             SELECT e.*, c.nome as categoria_nome 
             FROM empresas e 
@@ -384,5 +402,6 @@ app.listen(port, () => {
     console.log(`\n=========================================`);
     console.log(`🚀 Motor Central STL online na porta ${port}`);
     console.log(`☁️ Cloudinary Ativado e Blindado com a Chave Mestra!`);
+    console.log(`📊 Radar de Acessos Nativo Ativado nas Páginas!`);
     console.log(`=========================================\n`);
 });
