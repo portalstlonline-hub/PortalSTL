@@ -113,10 +113,13 @@ app.get('/explorar', async (req, res) => {
         
         if (buscaTexto) { 
             let termoLimpo = buscaTexto.trim();
+            // Tira o "s" do final para buscar no singular (ex: cachoeiras -> cachoeira)
             if (termoLimpo.toLowerCase().endsWith('s') && termoLimpo.length > 3) termoLimpo = termoLimpo.slice(0, -1);
             const termo = `%${termoLimpo}%`;
-            queryEmpresas += ' AND (e.nome LIKE ? OR c.nome LIKE ? OR c.palavras_chave LIKE ? OR e.descricao LIKE ?)'; 
-            params.push(termo, termo, termo, termo); 
+            
+            // 🎯 UPGRADE: Busca cirúrgica! Lendo apenas Nome, Categoria e Palavras-Chave (Ignorando a descrição)
+            queryEmpresas += ' AND (e.nome LIKE ? OR c.nome LIKE ? OR c.palavras_chave LIKE ?)'; 
+            params.push(termo, termo, termo); 
         }
         
         queryEmpresas += ' ORDER BY e.plano_id DESC, RAND()';
@@ -234,11 +237,6 @@ app.post('/admin/nova', uploadConfig, async (req, res) => {
     try {
         const { nome, categoria_id, descricao, endereco, link_maps, whatsapp, site, facebook, instagram, plano_id, status, video_url } = req.body;
         const slug = gerarSlug(nome);
-// Processar Nova Empresa
-app.post('/admin/nova', uploadConfig, async (req, res) => {
-    try {
-        const { nome, categoria_id, descricao, endereco, link_maps, whatsapp, site, facebook, instagram, plano_id, status, video_url } = req.body;
-        const slug = gerarSlug(nome);
         
         let imagemUrl = null;
         if (req.files && req.files['foto']) imagemUrl = req.files['foto'][0].path;
@@ -270,6 +268,7 @@ app.get('/admin/editar/:id', async (req, res) => {
         res.status(500).send(err); 
     }
 });
+
 // Processar Edição de Empresa
 app.post('/admin/atualizar/:id', uploadConfig, async (req, res) => {
     try {
