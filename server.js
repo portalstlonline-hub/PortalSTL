@@ -3,6 +3,8 @@ const mysql = require('mysql2');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 require('dotenv').config();
 
 const app = express();
@@ -15,17 +17,27 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-
 // Garantir que a pasta de uploads existe
 const pastaUploads = path.join(__dirname, 'public/uploads');
 if (!fs.existsSync(pastaUploads)) {
     fs.mkdirSync(pastaUploads, { recursive: true });
 }
 
-// Configuração do Multer (Armazenamento de Imagens)
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, 'public/uploads/'),
-    filename: (req, file, cb) => cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname))
+// 🔐 CONFIGURAÇÃO DO CLOUDINARY (Lendo do cofre do Render)
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// ☁️ CONFIGURAÇÃO DO ARMAZENAMENTO NA NUVEM
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'portal-stl',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+        transformation: [{ width: 1200, crop: 'limit' }]
+    }
 });
 
 // 📸 UPGRADE: Limites de Galeria (1 Capa + 6 Galeria)
@@ -45,13 +57,13 @@ const db = mysql.createPool({
     connectionLimit: 10
 });
 
-// Função Auxiliar: Criar URLs Amigáveis (Slugs)
+// Criar URLs Amigáveis (Slugs)
 const gerarSlug = (texto) => {
     return (texto || '').toLowerCase()
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "") // Remove acentos
-        .replace(/ /g, '-')             // Troca espaços por hífens
-        .replace(/[^\w-]+/g, '');       // Remove caracteres especiais
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/ /g, '-')
+        .replace(/[^\w-]+/g, '');
 };
 
 // ==========================================
@@ -71,12 +83,12 @@ app.get('/', async (req, res) => {
     }
 });
 
-// Receção de Contactos / Cadastro Gratuito
+// Receção de Cadastro Direto do Formulário (Página Inicial)
 app.post('/contato', async (req, res) => {
     try {
         const { nome, categoria_id, whatsapp, endereco, link_maps, site, facebook, instagram } = req.body;
         const slug = gerarSlug(nome);
-        // 🚨 UPGRADE COMERCIAL: Mudou de 'inativo' para 'aprovacao'
+        // Entra automaticamente como 'aprovacao' (laranja piscante no painel)
         const query = `INSERT INTO empresas (categoria_id, plano_id, nome, slug, endereco, link_maps, whatsapp, site, facebook, instagram, status) VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, 'aprovacao')`;
         await db.promise().execute(query, [categoria_id, nome, slug, endereco || null, link_maps || null, whatsapp || null, site || null, facebook || null, instagram || null]);
         res.redirect('/?sucesso=true#anunciar');
@@ -86,7 +98,7 @@ app.post('/contato', async (req, res) => {
     }
 });
 
-// Página Explorar / Buscas
+// Página Explorar / Filtros e Buscas
 app.get('/explorar', async (req, res) => {
     try {
         const categoriaFiltro = req.query.categoria; 
@@ -129,8 +141,6 @@ const protegerAdmin = (req, res, next) => {
     }
     
     const auth = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
-    
-    // Procura credenciais no .env, se não existirem usa as padrão de emergência
     const adminUser = process.env.ADMIN_USER || 'daniel';
     const adminPass = process.env.ADMIN_PASS || 'senha123';
 
@@ -145,7 +155,7 @@ const protegerAdmin = (req, res, next) => {
 app.use('/admin', protegerAdmin);
 
 // ==========================================
-// ⚙️ ROTAS DO ADMIN (PAINEL DE CONTROLO)
+// ⚙️ ROTAS DO ADMIN (PAINEL DE CONTROLE)
 // ==========================================
 
 // Dashboard Principal
@@ -174,11 +184,12 @@ app.get('/admin/excluir/:id', async (req, res) => {
 // Excluir Categoria
 app.get('/admin/categorias/excluir/:id', async (req, res) => {
     try {
+        await db.promise().execute('UPDATE empresas SET categoria_id = NULL WHERE categoria_id = ?', [req.params.id]);
         await db.promise().execute('DELETE FROM categorias WHERE id = ?', [req.params.id]);
         res.redirect('/admin');
     } catch (err) { 
         console.error('🚨 Erro ao excluir categoria:', err);
-        res.status(500).send('Erro ao excluir categoria.'); 
+        res.status(500).send('<script>alert("Erro ao excluir categoria."); window.location.href="/admin";</script>'); 
     }
 });
 
@@ -213,11 +224,16 @@ app.get('/admin/nova', async (req, res) => {
         const [categorias] = await db.promise().execute('SELECT * FROM categorias ORDER BY nome ASC');
         res.render('nova', { categorias });
     } catch (err) { 
-        console.error('🚨 Erro a carregar nova empresa:', err);
+        console.error('🚨 Erro ao carregar tela de nova empresa:', err);
         res.status(500).send(err); 
     }
 });
 
+// Processar Nova Empresa (Salvando URLs do Cloudinary)
+app.post('/admin/nova', uploadConfig, async (req, res) => {
+    try {
+        const { nome, categoria_id, descricao, endereco, link_maps, whatsapp, site, facebook, instagram, plano_id, status, video_url } = req.body;
+        const slug = gerarSlug(nome);
 // Processar Nova Empresa
 app.post('/admin/nova', uploadConfig, async (req, res) => {
     try {
@@ -225,10 +241,10 @@ app.post('/admin/nova', uploadConfig, async (req, res) => {
         const slug = gerarSlug(nome);
         
         let imagemUrl = null;
-        if (req.files && req.files['foto']) imagemUrl = `/uploads/${req.files['foto'][0].filename}`;
+        if (req.files && req.files['foto']) imagemUrl = req.files['foto'][0].path;
         
         let galeriaJson = null;
-        if (req.files && req.files['galeria']) galeriaJson = JSON.stringify(req.files['galeria'].map(f => `/uploads/${f.filename}`));
+        if (req.files && req.files['galeria']) galeriaJson = JSON.stringify(req.files['galeria'].map(f => f.path));
         
         const query = `INSERT INTO empresas (categoria_id, plano_id, nome, slug, descricao, endereco, link_maps, whatsapp, site, facebook, instagram, imagem, video_url, galeria, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         await db.promise().execute(query, [categoria_id, plano_id, nome, slug, descricao || null, endereco || null, link_maps || null, whatsapp || null, site || null, facebook || null, instagram || null, imagemUrl, video_url || null, galeriaJson, status]);
@@ -250,11 +266,10 @@ app.get('/admin/editar/:id', async (req, res) => {
         
         res.render('editar', { empresa: empresa[0], categorias });
     } catch (err) { 
-        console.error('🚨 Erro a carregar edição:', err);
+        console.error('🚨 Erro ao carregar edição:', err);
         res.status(500).send(err); 
     }
 });
-
 // Processar Edição de Empresa
 app.post('/admin/atualizar/:id', uploadConfig, async (req, res) => {
     try {
@@ -267,12 +282,12 @@ app.post('/admin/atualizar/:id', uploadConfig, async (req, res) => {
         
         if (req.files && req.files['foto']) { 
             query += ', imagem=?'; 
-            params.push(`/uploads/${req.files['foto'][0].filename}`); 
+            params.push(req.files['foto'][0].path); 
         }
         
         if (req.files && req.files['galeria'] && req.files['galeria'].length > 0) { 
             query += ', galeria=?'; 
-            params.push(JSON.stringify(req.files['galeria'].map(f => `/uploads/${f.filename}`))); 
+            params.push(JSON.stringify(req.files['galeria'].map(f => f.path))); 
         }
         
         query += ' WHERE id=?';
@@ -294,16 +309,12 @@ app.post('/admin/importar-google', async (req, res) => {
     const apiKey = process.env.GOOGLE_PLACES_API_KEY;
 
     if (!apiKey || apiKey === 'AIzaSySuaChaveSecretaDoGoogleAqui') {
-        return res.status(400).send('<script>alert("Erro: Configure a GOOGLE_PLACES_API_KEY no .env"); window.location.href="/admin";</script>');
+        return res.status(400).send('<script>alert("Erro: Configure a GOOGLE_PLACES_API_KEY no Render"); window.location.href="/admin";</script>');
     }
 
     try {
-        // Usa a Nova API do Places (Text Search)
         const url = 'https://places.googleapis.com/v1/places:searchText';
-        
-        const requestBody = { 
-            textQuery: `${termo_busca} em São Thomé das Letras, MG` 
-        };
+        const requestBody = { textQuery: `${termo_busca} em São Thomé das Letras, MG` };
 
         const response = await fetch(url, {
             method: 'POST',
@@ -333,6 +344,7 @@ app.post('/admin/importar-google', async (req, res) => {
             const [existe] = await db.promise().execute('SELECT id FROM empresas WHERE slug = ?', [slug]);
 
             if (existe.length === 0) {
+                // Salva como rascunho interno inicial (status 'inativo')
                 const query = `INSERT INTO empresas (categoria_id, plano_id, nome, slug, endereco, whatsapp, status) VALUES (?, 1, ?, ?, ?, ?, 'inativo')`;
                 await db.promise().execute(query, [categoria_id, nome, slug, endereco || null, telefone || null]);
                 inseridos++;
@@ -341,8 +353,7 @@ app.post('/admin/importar-google', async (req, res) => {
             }
         }
 
-        res.send(`<script>alert("Varredura Concluída!\\n\\n✅ Adicionados: ${inseridos}\\n⚠️ Já existiam: ${duplicados}\\n\\nEles estão no painel como INATIVOS para sua revisão."); window.location.href="/admin";</script>`);
-
+        res.send(`<script>alert("Varredura Concluída!\\n\\n✅ Adicionados: ${inseridos}\\n⚠️ Já existiam: ${duplicados}"); window.location.href="/admin";</script>`);
     } catch (err) {
         console.error('🚨 Erro na API do Google:', err);
         res.status(500).send(`<script>alert("Erro na varredura: ${err.message}"); window.location.href="/admin";</script>`);
@@ -350,10 +361,8 @@ app.post('/admin/importar-google', async (req, res) => {
 });
 
 // ==========================================
-// 🚨 ROTA DA "URL LIMPA" (DEVE FICAR NO FUNDO!)
+// 🚨 ROTA DA "URL LIMPA" (Fica sempre no final!)
 // ==========================================
-// Como não há '/local/', o servidor testa TUDO aqui. 
-// Por isso, deve vir depois de '/admin', '/explorar', etc.
 app.get('/:slug', async (req, res) => {
     try {
         const query = `
@@ -372,9 +381,10 @@ app.get('/:slug', async (req, res) => {
     }
 });
 
-// 🚀 Inicialização do Servidor
+// Inicialização do Servidor
 app.listen(port, () => {
     console.log(`\n=========================================`);
     console.log(`🚀 Motor Central STL online na porta ${port}`);
+    console.log(`☁️ Cloudinary Ativado! Imagens salvas de forma persistente.`);
     console.log(`=========================================\n`);
 });
