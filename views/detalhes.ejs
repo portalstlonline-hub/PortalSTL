@@ -3,206 +3,313 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= empresa.nome %> - Portal STL</title>
     
-    <meta name="description" content="Conheça <%= empresa.nome %> em São Thomé das Letras. Categoria: <%= empresa.categoria_nome %>.">
+    <!-- SEO DINÂMICO -->
+    <title><%= empresa.nome %> - Portal São Thomé das Letras</title>
+    <meta name="description" content="<%= empresa.descricao ? empresa.descricao.substring(0, 160) : 'Confira os detalhes de ' + empresa.nome + ' em São Thomé das Letras.' %>">
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- OPEN GRAPH (Para partilhas em Redes Sociais/WhatsApp) -->
+    <meta property="og:title" content="<%= empresa.nome %> | Portal STL">
+    <meta property="og:description" content="<%= empresa.descricao ? empresa.descricao.substring(0, 160) : 'Descubra tudo sobre este local em São Thomé das Letras.' %>">
     
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SEU_CODIGO_AQUI"></script>
+    <!-- 🚨 O SEGREDO DO WHATSAPP (URL ABSOLUTA PARA A CAPA DA EMPRESA) 🚨 -->
+    <meta property="og:image" content="https://portalsaothomedasletras.com.br<%= empresa.imagem ? empresa.imagem : '/uploads/capa-compartilhamento.png' %>">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:type" content="website">
+
+    <!-- 🚨 FAVICON 🚨 -->
+    <link rel="icon" type="image/png" href="/uploads/favicon.png">
+
+    <!-- 🕵️‍♂️ GOOGLE ANALYTICS 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BDTY71XR8Q"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-SEU_CODIGO_AQUI');
+      gtag('config', 'G-BDTY71XR8Q');
     </script>
-</head>
-<body class="bg-gray-50 font-sans text-gray-800 antialiased">
 
-    <nav class="bg-white/90 backdrop-blur-sm shadow-sm fixed w-full z-50 transition-all duration-300 border-b border-gray-100">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <a href="/explorar" class="text-gray-500 hover:text-amber-500 font-bold transition flex items-center gap-2">
-                    <i class="fas fa-arrow-left"></i> Voltar
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+    <!-- HEADER / NAV -->
+    <nav class="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 shadow-sm transition-all duration-300">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <!-- 🚨 A SUA NOVA LOGOMARCA 🚨 -->
+            <a href="/" class="flex items-center">
+                <img src="/uploads/portallogomarca.png" alt="Portal STL" class="h-9 md:h-11 w-auto object-contain">
+            </a>
+            <div class="flex items-center gap-4">
+                <a href="/explorar" class="text-sm font-bold text-slate-600 hover:text-amber-600 transition flex items-center gap-1">
+                    <i class="fas fa-search"></i> Explorar
                 </a>
-                <a href="/" class="flex-shrink-0">
-                    <img src="/uploads/portallogomarca.png" alt="Portal STL" class="h-8 object-contain">
+                <!-- 🚨 BOTÃO ANUNCIE PRETO 🚨 -->
+                <a href="/#anunciar" class="bg-slate-900 hover:bg-black text-white text-xs md:text-sm font-bold px-5 md:px-6 py-2 md:py-2.5 rounded-full transition shadow-sm whitespace-nowrap">
+                    Anuncie
                 </a>
             </div>
         </div>
     </nav>
 
-    <header class="relative pt-16 h-[40vh] md:h-[50vh] bg-slate-900 flex items-end justify-center overflow-hidden">
+    <!-- BANNER PRINCIPAL / CAPA (PROPORÇÃO FACEBOOK: 820x312) -->
+    <div class="relative w-full aspect-[16/9] md:aspect-[820/312] bg-slate-900 overflow-hidden flex justify-center items-center">
         <% if(empresa.imagem) { %>
-            <img src="<%= empresa.imagem %>" alt="<%= empresa.nome %>" class="absolute inset-0 w-full h-full object-cover opacity-60">
+            <!-- object-contain agora ativado para mobile e desktop: a arte nunca será cortada! -->
+            <img src="<%= empresa.imagem %>" alt="<%= empresa.nome %>" class="w-full h-full object-contain opacity-95">
+        <% } else { %>
+            <div class="w-full h-full flex items-center justify-center bg-slate-800 text-slate-500">
+                <i class="fas fa-image text-6xl"></i>
+            </div>
         <% } %>
-        <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent"></div>
         
-        <div class="relative z-10 text-center px-4 pb-12 max-w-4xl mx-auto">
-            <span class="inline-block py-1 px-3 rounded-full bg-amber-500/20 border border-amber-400/50 text-amber-300 font-bold text-xs uppercase tracking-widest mb-3 backdrop-blur-sm">
-                <%= empresa.categoria_nome || 'Local' %>
-            </span>
-            <h1 class="text-3xl md:text-5xl font-black text-white drop-shadow-lg"><%= empresa.nome %></h1>
-        </div>
-    </header>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 w-full p-4 md:p-10 pointer-events-none">
+            <div class="max-w-6xl mx-auto pointer-events-auto">
+                <h1 class="text-3xl md:text-5xl lg:text-6xl font-black text-white drop-shadow-lg leading-tight"><%= empresa.nome %></h1>
 
-    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 -mt-10 relative z-20">
-        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-10 flex flex-col md:flex-row gap-10">
-            
-            <div class="flex-1">
-                <h2 class="text-xl font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2 flex items-center gap-2">
-                    <i class="fas fa-info-circle text-amber-500"></i> Sobre o Local
-                </h2>
-                
-                <div class="prose prose-amber max-w-none text-gray-600 leading-relaxed">
-                    <% if (empresa.descricao) { %>
-                        <p class="whitespace-pre-line"><%= empresa.descricao %></p>
-                    <% } else { %>
-                        <p class="italic text-gray-400">Nenhuma descrição fornecida pelo proprietário.</p>
+                <div class="flex flex-wrap gap-3 mt-3">
+                    <span class="bg-amber-500 text-white text-xs font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-lg">
+                        <%= empresa.categoria_nome || 'Local' %>
+                    </span>
+                    <% if(empresa.plano_id === 3) { %>
+                        <span class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/30 flex items-center gap-1">
+                            <i class="fas fa-crown text-amber-300"></i> Destaque da Cidade
+                        </span>
                     <% } %>
                 </div>
-
-                <% 
-                let fotos = [];
-                if (empresa.galeria) {
-                    try { fotos = JSON.parse(empresa.galeria); } catch(e) {}
-                }
-                %>
-                <% if (fotos.length > 0) { %>
-                    <h2 class="text-xl font-bold text-gray-900 mt-10 mb-4 border-b border-gray-100 pb-2 flex items-center gap-2">
-                        <i class="fas fa-camera text-amber-500"></i> Galeria de Fotos
-                    </h2>
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        <% fotos.forEach(foto => { %>
-                            <a href="<%= foto %>" target="_blank" class="block h-32 md:h-40 overflow-hidden rounded-xl border border-gray-200 hover:shadow-lg transition">
-                                <img src="<%= foto %>" class="w-full h-full object-cover hover:scale-110 transition duration-500" alt="Foto da Galeria">
-                            </a>
-                        <% }) %>
-                    </div>
-                <% } %>
-
-                <% if (empresa.video_url) { %>
-                    <h2 class="text-xl font-bold text-gray-900 mt-10 mb-4 border-b border-gray-100 pb-2 flex items-center gap-2">
-                        <i class="fab fa-youtube text-red-500"></i> Vídeo
-                    </h2>
-                    <div class="aspect-w-16 aspect-h-9 rounded-xl overflow-hidden shadow-md">
-                        <iframe src="<%= empresa.video_url %>" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="w-full h-64 md:h-96"></iframe>
-                    </div>
-                <% } %>
             </div>
-
-            <div class="w-full md:w-80 flex-shrink-0">
-                <div class="bg-gray-50 rounded-xl p-6 border border-gray-200 sticky top-24">
-                    <h3 class="font-black text-gray-900 text-lg mb-6 text-center uppercase tracking-wide">Fale com o Local</h3>
-                    
-                    <div class="space-y-4">
-                        <% if (empresa.whatsapp) { %>
-                            <a href="https://wa.me/<%= empresa.whatsapp.replace(/\D/g, '') %>" target="_blank" 
-                               onclick="gtag('event', 'clique_whatsapp', { 'nome_empresa': '<%= empresa.nome %>', 'categoria': '<%= empresa.categoria_nome %>' });"
-                               class="flex items-center justify-center w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg shadow-md transition transform hover:-translate-y-0.5 gap-2">
-                                <i class="fab fa-whatsapp text-xl"></i> Chamar no WhatsApp
-                            </a>
-                        <% } %>
-
-                        <% if (empresa.link_maps) { %>
-                            <a href="<%= empresa.link_maps %>" target="_blank" 
-                               onclick="gtag('event', 'clique_mapa', { 'nome_empresa': '<%= empresa.nome %>' });"
-                               class="flex items-center justify-center w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg shadow-md transition transform hover:-translate-y-0.5 gap-2">
-                                <i class="fas fa-map-marker-alt text-xl"></i> Como Chegar
-                            </a>
-                        <% } %>
-                    </div>
-
-                    <div class="mt-8 pt-6 border-t border-gray-200 space-y-4 text-sm text-gray-600">
-                        <% if (empresa.endereco) { %>
-                            <div class="flex items-start gap-3">
-                                <i class="fas fa-location-dot text-amber-500 mt-1"></i>
-                                <span><%= empresa.endereco %></span>
-                            </div>
-                        <% } %>
-                        
-                        <% if (empresa.instagram) { %>
-                            <div class="flex items-center gap-3">
-                                <i class="fab fa-instagram text-pink-500"></i>
-                                <a href="https://instagram.com/<%= empresa.instagram.replace('@', '') %>" target="_blank" 
-                                   onclick="gtag('event', 'clique_instagram', { 'nome_empresa': '<%= empresa.nome %>' });"
-                                   class="text-pink-600 font-bold hover:underline">
-                                    <%= empresa.instagram %>
-                                </a>
-                            </div>
-                        <% } %>
-                        
-                        <% if (empresa.site) { %>
-                            <div class="flex items-center gap-3">
-                                <i class="fas fa-globe text-blue-500"></i>
-                                <a href="<%= empresa.site %>" target="_blank" class="text-blue-600 font-bold hover:underline truncate">Acessar Site</a>
-                            </div>
-                        <% } %>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </main>
-
-    <footer class="bg-gray-900 text-white py-8 border-t border-gray-800 text-center mt-auto">
-        <p class="text-gray-500 text-sm">© <%= new Date().getFullYear() %> Portal São Thomé das Letras. Operado por Resultados Online.</p>
-    </footer>
-
-    <!-- ========================================== -->
-    <!-- 🍪 POP-UP LGPD (AVISO DE COOKIES)          -->
-    <!-- ========================================== -->
-    <div id="lgpd-banner" class="fixed bottom-4 left-4 right-4 md:left-auto md:right-8 md:w-[400px] bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 z-[9999] transform translate-y-full opacity-0 transition-all duration-500 flex flex-col pointer-events-none">
-        <div class="flex items-start gap-4">
-            <div class="text-4xl">🍪</div>
-            <div>
-                <h4 class="font-black text-slate-900 text-lg mb-1">Privacidade e Cookies</h4>
-                <p class="text-sm text-slate-500 leading-relaxed mb-4">
-                    Utilizamos cookies para melhorar a sua experiência, personalizar anúncios e gerar estatísticas de acesso. Ao continuar a navegar, você concorda com a nossa política de privacidade.
-                </p>
-            </div>
-        </div>
-        <div class="flex gap-3 mt-auto">
-            <button id="lgpd-recusar" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition">
-                Apenas Essenciais
-            </button>
-            <button id="lgpd-aceitar" class="flex-1 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm shadow-md shadow-amber-500/20 transition">
-                Aceitar Tudo
-            </button>
         </div>
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const banner = document.getElementById('lgpd-banner');
-            const btnAceitar = document.getElementById('lgpd-aceitar');
-            const btnRecusar = document.getElementById('lgpd-recusar');
-
-            // Verifica se o utilizador já respondeu antes
-            if (!localStorage.getItem('stl_lgpd_consent')) {
-                // Animação de entrada suave após 1 segundo do site carregar
-                setTimeout(() => {
-                    banner.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none');
-                }, 1000);
-            }
-
-            function fecharBanner(resposta) {
-                // Salva a decisão no navegador do turista
-                localStorage.setItem('stl_lgpd_consent', resposta);
+    <!-- CONTEÚDO -->
+    <main class="max-w-6xl mx-auto px-4 py-10">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            
+            <!-- COLUNA ESQUERDA: INFO -->
+            <div class="lg:col-span-2 space-y-8">
                 
-                // Se ele aceitou, podemos disparar um evento pro Google Analytics saber!
-                if(resposta === 'aceitou' && typeof gtag === 'function') {
-                    gtag('event', 'consentimento_lgpd', { 'status': 'aceito' });
-                }
+                <!-- Descrição -->
+                <section class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100">
+                    <h2 class="text-xl font-extrabold mb-4 flex items-center gap-2">
+                        <i class="fas fa-align-left text-amber-500"></i> Sobre
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed whitespace-pre-line text-lg">
+                        <%= empresa.descricao || 'Este local ainda não possui uma descrição detalhada.' %>
+                    </p>
+                </section>
 
-                // Animação de saída
-                banner.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none');
-            }
+                <!-- EXCLUSIVO PARA VITRINE PREMIUM OU SUPERIOR (plano_id >= 2) -->
+                <% if(empresa.plano_id >= 2 && empresa.galeria) { 
+                    const imagens = JSON.parse(empresa.galeria); 
+                    if(imagens.length > 0) { %>
+                    <section>
+                        <h2 class="text-xl font-extrabold mb-4 flex items-center gap-2">
+                            <i class="fas fa-camera-retro text-amber-500"></i> Galeria de Fotos
+                        </h2>
+                        <!-- Suporte para até 6 imagens em grid responsivo com função de clique -->
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <% imagens.slice(0, 6).forEach(img => { %>
+                                <div class="aspect-square rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md hover:scale-[1.02] transition duration-300 cursor-pointer" onclick="abrirLightbox('<%= img %>')">
+                                    <img src="<%= img %>" class="w-full h-full object-cover hover:opacity-90 transition">
+                                </div>
+                            <% }) %>
+                        </div>
+                    </section>
+                <% } } %>
 
-            btnAceitar.addEventListener('click', () => fecharBanner('aceitou'));
-            btnRecusar.addEventListener('click', () => fecharBanner('recusou'));
+                <!-- 🚨 VÍDEO CAMALEÃO (YouTube, FB, Insta, Vimeo) 🚨 -->
+                <% if(empresa.video_url) { 
+                    let rawUrl = empresa.video_url.trim();
+                    let finalUrl = rawUrl;
+                    
+                    if (rawUrl.includes('youtube.com/watch?v=')) {
+                        finalUrl = rawUrl.replace('watch?v=', 'embed/');
+                        if(finalUrl.includes('&')) finalUrl = finalUrl.split('&')[0]; // Remove parâmetros extras
+                    } else if (rawUrl.includes('youtu.be/')) {
+                        let yId = rawUrl.split('youtu.be/')[1].split('?')[0];
+                        finalUrl = 'https://www.youtube.com/embed/' + yId;
+                    } else if (rawUrl.includes('instagram.com/p/') || rawUrl.includes('instagram.com/reel/')) {
+                        let cleanUrl = rawUrl.split('?')[0];
+                        if(!cleanUrl.endsWith('/')) cleanUrl += '/';
+                        finalUrl = cleanUrl + 'embed';
+                    } else if (rawUrl.includes('facebook.com')) {
+                        finalUrl = 'https://www.facebook.com/plugins/video.php?href=' + encodeURIComponent(rawUrl) + '&show_text=false';
+                    } else if (rawUrl.includes('vimeo.com/')) {
+                        let vId = rawUrl.split('vimeo.com/')[1].split('?')[0];
+                        finalUrl = 'https://player.vimeo.com/video/' + vId;
+                    }
+                %>
+                    <section class="bg-slate-900 p-2 rounded-3xl overflow-hidden shadow-xl border border-slate-800">
+                        <!-- Fundo preto e centralização para acomodar vídeos verticais (Insta/Reels) sem distorcer -->
+                        <div class="aspect-video rounded-2xl overflow-hidden bg-black flex justify-center items-center">
+                            <iframe class="w-full h-full" src="<%= finalUrl %>" frameborder="0" scrolling="no" allowtransparency="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe>
+                        </div>
+                    </section>
+                <% } %>
+
+            </div>
+
+            <!-- COLUNA DIREITA: SIDEBAR/CONTATO -->
+            <div class="space-y-6">
+                
+                <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
+                    <h3 class="text-lg font-bold mb-6 text-slate-800 flex items-center gap-2">
+                        <i class="far fa-address-card text-amber-500"></i> Contatos
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <!-- WhatsApp Premium -->
+                        <% if(empresa.whatsapp) { %>
+                            <a href="https://wa.me/55<%= empresa.whatsapp.replace(/\D/g,'') %>?text=Ol%C3%A1!%20Vi%20o%20seu%20an%C3%BAncio%20no%20Portal%20STL." target="_blank" 
+                               class="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#1da851] text-white font-black py-4 rounded-2xl transition shadow-lg shadow-green-200 text-lg">
+                                <i class="fab fa-whatsapp text-2xl"></i> WHATSAPP
+                            </a>
+                        <% } %>
+
+                        <!-- Redes Sociais: Insta & Facebook Lado a Lado -->
+                        <div class="grid grid-cols-2 gap-3 mt-4">
+                            <% if(empresa.instagram) { %>
+                                <a href="https://instagram.com/<%= empresa.instagram.replace('@','') %>" target="_blank" 
+                                   class="flex items-center justify-center gap-2 w-full bg-slate-50 hover:bg-pink-50 text-slate-700 hover:text-pink-600 font-bold py-3 rounded-xl border border-slate-200 hover:border-pink-200 transition text-sm">
+                                    <i class="fab fa-instagram text-lg"></i> Instagram
+                                </a>
+                            <% } %>
+
+                            <% if(empresa.facebook) { %>
+                                <a href="<%= empresa.facebook.startsWith('http') ? empresa.facebook : 'https://' + empresa.facebook %>" target="_blank" 
+                                   class="flex items-center justify-center gap-2 w-full bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 font-bold py-3 rounded-xl border border-slate-200 hover:border-blue-200 transition text-sm">
+                                    <i class="fab fa-facebook text-lg"></i> Facebook
+                                </a>
+                            <% } %>
+                        </div>
+
+                        <!-- Site Oficial -->
+                        <% if(empresa.site) { %>
+                            <a href="<%= empresa.site.startsWith('http') ? empresa.site : 'https://' + empresa.site %>" target="_blank" 
+                               class="flex items-center justify-center gap-2 w-full bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-700 font-bold py-3 rounded-xl transition text-sm mt-2">
+                                <i class="fas fa-globe text-lg"></i> Visitar Site Oficial
+                            </a>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- CARTÃO DE LOCALIZAÇÃO (MAPS DIFERENCIADO) -->
+                <% if(empresa.endereco || empresa.link_maps) { %>
+                <div class="bg-slate-900 rounded-3xl p-6 shadow-xl text-white relative overflow-hidden">
+                    <i class="fas fa-map-marked-alt absolute -bottom-4 -right-4 text-7xl text-slate-800 opacity-50 -rotate-12"></i>
+                    
+                    <h3 class="text-lg font-black text-white mb-4 relative flex items-center gap-2">
+                        <i class="fas fa-location-dot text-amber-500"></i> Como Chegar
+                    </h3>
+                    
+                    <div class="relative mb-6">
+                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Endereço Registrado</p>
+                        <p class="text-sm font-medium text-slate-200 leading-relaxed"><%= empresa.endereco || 'São Thomé das Letras, MG' %></p>
+                    </div>
+
+                    <% if(empresa.link_maps) { %>
+                        <a href="<%= empresa.link_maps %>" target="_blank" class="w-full bg-white hover:bg-amber-500 text-slate-900 hover:text-white font-black py-3.5 rounded-xl transition flex items-center justify-center gap-2 relative shadow-md">
+                            <i class="fas fa-route"></i> Abrir no Google Maps
+                        </a>
+                    <% } %>
+                </div>
+                <% } %>
+
+                <!-- 🚨 CARTÃO DE COMPARTILHAMENTO (Boca a Boca Digital) 🚨 -->
+                <div class="bg-white rounded-3xl p-6 shadow-xl border border-slate-100 mt-6">
+                    <h3 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2">
+                        <i class="fas fa-share-nodes text-amber-500"></i> Compartilhar Local
+                    </h3>
+                    <div class="flex gap-3">
+                        <!-- WhatsApp -->
+                        <button onclick="compartilharWhatsApp()" class="flex-1 bg-[#25D366] hover:bg-[#1da851] text-white py-3.5 rounded-xl transition shadow-md flex items-center justify-center gap-2" title="Compartilhar no WhatsApp">
+                            <i class="fab fa-whatsapp text-xl"></i>
+                        </button>
+                        <!-- Facebook -->
+                        <button onclick="compartilharFacebook()" class="flex-1 bg-[#1877F2] hover:bg-[#166fe5] text-white py-3.5 rounded-xl transition shadow-md flex items-center justify-center gap-2" title="Compartilhar no Facebook">
+                            <i class="fab fa-facebook-f text-xl"></i>
+                        </button>
+                        <!-- Copiar Link -->
+                        <button onclick="copiarLink()" id="btnCopiar" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3.5 rounded-xl transition shadow-sm flex items-center justify-center gap-2" title="Copiar Link">
+                            <i class="fas fa-link text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t border-slate-100 py-10 mt-20">
+        <div class="max-w-6xl mx-auto px-4 text-center flex flex-col items-center">
+            <!-- 🚨 Rodapé com Logo em vez de Texto (Opcional, mas dá mais autoridade) 🚨 -->
+            <img src="/uploads/portallogomarca.png" alt="Portal STL" class="h-8 md:h-10 w-auto object-contain grayscale opacity-40 mb-3 hover:grayscale-0 hover:opacity-100 transition duration-300">
+            <p class="text-slate-400 text-sm font-medium">© 2026. Desenvolvido com <i class="fas fa-heart text-red-400 mx-1"></i> por Resultados Online.</p>
+        </div>
+    </footer>
+
+    <!-- MODAL DO LIGHTBOX (AMPLIAÇÃO DE FOTOS) -->
+    <div id="lightbox" class="fixed inset-0 z-[100] bg-black/95 hidden flex justify-center items-center p-4 backdrop-blur-sm transition-opacity" onclick="fecharLightbox()">
+        <button class="absolute top-4 right-4 md:top-8 md:right-8 text-white hover:text-amber-500 text-4xl font-bold transition focus:outline-none" aria-label="Fechar">&times;</button>
+        <img id="lightbox-img" src="" class="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl" onclick="event.stopPropagation()">
+    </div>
+
+    <!-- SCRIPT DO LIGHTBOX -->
+    <script>
+        function abrirLightbox(src) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox').classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Evita que a página faça scroll no fundo
+        }
+
+        function fecharLightbox() {
+            document.getElementById('lightbox').classList.add('hidden');
+            document.body.style.overflow = 'auto'; // Restaura o scroll
+        }
+        
+        // Fecha o lightbox ao pressionar a tecla ESC
+        document.addEventListener('keydown', function(event){
+            if(event.key === "Escape") fecharLightbox();
         });
+
+        // 🚨 FUNÇÕES MÁGICAS DE COMPARTILHAMENTO 🚨
+        function compartilharWhatsApp() {
+            const url = encodeURIComponent(window.location.href);
+            // Mensagem persuasiva já pronta para o turista
+            const texto = encodeURIComponent(`Olha esse lugar incrível que encontrei no Portal STL: <%= empresa.nome %>\n\n`);
+            window.open(`https://api.whatsapp.com/send?text=${texto}${url}`, '_blank');
+        }
+
+        function compartilharFacebook() {
+            const url = encodeURIComponent(window.location.href);
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+        }
+
+        function copiarLink() {
+            // Método à prova de falhas para garantir a cópia em qualquer celular
+            const tempInput = document.createElement("input");
+            tempInput.value = window.location.href;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            
+            // Efeito visual (UX) mudando o ícone para um Visto Verde
+            const btn = document.getElementById('btnCopiar');
+            const iconOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check text-xl text-emerald-500"></i>';
+            setTimeout(() => {
+                btn.innerHTML = iconOriginal;
+            }, 2000); // Volta ao normal após 2 segundos
+        }
     </script>
+
 </body>
 </html>
