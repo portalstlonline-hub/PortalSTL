@@ -11,9 +11,18 @@
     <!-- OPEN GRAPH (Para partilhas em Redes Sociais/WhatsApp) -->
     <meta property="og:title" content="<%= empresa.nome %> | Portal STL">
     <meta property="og:description" content="<%= empresa.descricao ? empresa.descricao.substring(0, 160) : 'Descubra tudo sobre este local em São Thomé das Letras.' %>">
+    <meta property="og:url" content="https://portalsaothomedasletras.com.br/<%= empresa.slug %>">
     
-    <!-- 🚨 O SEGREDO DO WHATSAPP (URL ABSOLUTA PARA A CAPA DA EMPRESA) 🚨 -->
-    <meta property="og:image" content="https://portalsaothomedasletras.com.br<%= empresa.imagem ? empresa.imagem : '/uploads/capa-compartilhamento.png' %>">
+    <!-- 🚨 O SEGREDO DO WHATSAPP (URL INTELIGENTE) 🚨 -->
+    <% 
+        let ogImage = 'https://portalsaothomedasletras.com.br/uploads/capa-compartilhamento.png';
+        if (empresa.imagem) {
+            // Se já vier do Cloudinary (com http), usa direto. Se for local, coloca o domínio.
+            ogImage = empresa.imagem.startsWith('http') ? empresa.imagem : 'https://portalsaothomedasletras.com.br' + empresa.imagem;
+        }
+    %>
+    <meta property="og:image" content="<%= ogImage %>">
+    <meta property="og:image:secure_url" content="<%= ogImage %>">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:type" content="website">
