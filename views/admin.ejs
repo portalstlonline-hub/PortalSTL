@@ -19,12 +19,14 @@
 </head>
 <body class="bg-gray-100 font-sans text-gray-800">
 
-    <!-- 📊 CÁLCULOS DOS NÚMEROS DO PORTAL (Feito nos bastidores pelo servidor) -->
+    <!-- 📊 CÁLCULOS DOS NÚMEROS DO PORTAL (Upgrade Iago: Separação de Premium e Patrocinado + Ranking) -->
     <% 
         let totalEmpresas = empresas ? empresas.length : 0;
         let totalOnline = empresas ? empresas.filter(e => e.status === 'ativo').length : 0;
         let totalAprovacao = empresas ? empresas.filter(e => e.status === 'aprovacao').length : 0;
-        let totalPremium = empresas ? empresas.filter(e => e.plano_id >= 2 && e.status === 'ativo').length : 0;
+        let totalVitrine = empresas ? empresas.filter(e => e.plano_id == 2 && e.status === 'ativo').length : 0;
+        let totalPatrocinado = empresas ? empresas.filter(e => e.plano_id == 3 && e.status === 'ativo').length : 0;
+        let top10Empresas = empresas ? [...empresas].sort((a, b) => (b.acessos || 0) - (a.acessos || 0)).slice(0, 10) : [];
     %>
 
     <!-- CABEÇALHO DO PAINEL -->
@@ -47,45 +49,55 @@
         <!-- ========================================== -->
         <!-- 📈 DASHBOARD DE INDICADORES (NÚMEROS)      -->
         <!-- ========================================== -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
             <!-- Total -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center gap-4">
-                <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-xl">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center gap-3 md:gap-4">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-lg md:text-xl flex-shrink-0">
                     <i class="fas fa-chart-bar"></i>
                 </div>
                 <div>
-                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Total Portal</p>
-                    <h3 class="text-2xl font-black text-gray-800"><%= totalEmpresas %></h3>
+                    <p class="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">Total Portal</p>
+                    <h3 class="text-xl md:text-2xl font-black text-gray-800"><%= totalEmpresas %></h3>
                 </div>
             </div>
             <!-- Online -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center gap-4">
-                <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center gap-3 md:gap-4">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-lg md:text-xl flex-shrink-0">
                     <i class="fas fa-globe"></i>
                 </div>
                 <div>
-                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Online (Ativos)</p>
-                    <h3 class="text-2xl font-black text-gray-800"><%= totalOnline %></h3>
+                    <p class="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">Online</p>
+                    <h3 class="text-xl md:text-2xl font-black text-gray-800"><%= totalOnline %></h3>
                 </div>
             </div>
-            <!-- Premium -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center gap-4">
-                <div class="w-12 h-12 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center text-xl">
-                    <i class="fas fa-star"></i>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Assinantes VIP</p>
-                    <h3 class="text-2xl font-black text-gray-800"><%= totalPremium %></h3>
-                </div>
-            </div>
-            <!-- Aprovação -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center gap-4">
-                <div class="w-12 h-12 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center text-xl">
+            <!-- Em Aprovação -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center gap-3 md:gap-4">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center text-lg md:text-xl flex-shrink-0">
                     <i class="fas fa-user-clock"></i>
                 </div>
                 <div>
-                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Em Aprovação</p>
-                    <h3 class="text-2xl font-black text-gray-800"><%= totalAprovacao %></h3>
+                    <p class="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">Aprovação</p>
+                    <h3 class="text-xl md:text-2xl font-black text-gray-800"><%= totalAprovacao %></h3>
+                </div>
+            </div>
+            <!-- Vitrine Premium -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center gap-3 md:gap-4">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center text-lg md:text-xl flex-shrink-0">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">Premium</p>
+                    <h3 class="text-xl md:text-2xl font-black text-gray-800"><%= totalVitrine %></h3>
+                </div>
+            </div>
+            <!-- Patrocinados -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center gap-3 md:gap-4">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-slate-900 text-amber-400 flex items-center justify-center text-lg md:text-xl flex-shrink-0">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider">Patrocinados</p>
+                    <h3 class="text-xl md:text-2xl font-black text-gray-800"><%= totalPatrocinado %></h3>
                 </div>
             </div>
         </div>
@@ -132,7 +144,7 @@
                         <i class="fas fa-tags"></i> Categorias
                     </button>
                     <button onclick="switchTab('relatorios')" id="btn-tab-relatorios" class="py-4 border-b-2 border-transparent text-gray-500 hover:text-amber-600 font-bold flex items-center gap-2 whitespace-nowrap transition text-sm">
-                        <i class="fas fa-chart-pie"></i> Relatórios
+                        <i class="fas fa-chart-pie"></i> Relatórios e BI
                     </button>
                 </div>
                 
@@ -255,97 +267,154 @@
             <!-- ========================================== -->
             <!-- 📊 ABA 3: RELATÓRIOS E ESTATÍSTICAS (BI)   -->
             <!-- ========================================== -->
-            <div id="content-relatorios" class="hidden w-full">
+            <div id="content-relatorios" class="hidden w-full bg-white">
                 
-                <div class="p-4 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row gap-4 items-center justify-between">
-                    <div class="w-full sm:w-1/2">
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Selecione o Cliente</label>
-                        <select id="selectClienteReport" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-amber-500 outline-none text-sm font-medium shadow-sm">
-                            <option value="">Selecione uma empresa para gerar o relatório...</option>
-                            <% empresas.forEach(emp => { %>
-                                <option value="<%= emp.id %>"><%= emp.nome %></option>
-                            <% }) %>
-                        </select>
-                    </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 border-t border-gray-100">
                     
-                    <button onclick="gerarPDF()" id="btnDownloadPDF" class="w-full sm:w-auto bg-slate-900 hover:bg-black text-white font-bold py-2.5 px-6 rounded-md shadow transition flex items-center justify-center gap-2 opacity-50 cursor-not-allowed pointer-events-none text-sm">
-                        <i class="fas fa-file-pdf text-red-400"></i> Exportar para PDF
-                    </button>
-                </div>
-
-                <!-- O RELATÓRIO VISUAL (Que será impresso no PDF) -->
-                <div class="p-8 bg-gray-200 flex justify-center hidden" id="areaRelatorio">
-                    <div id="folhaPDF" class="bg-white w-full max-w-3xl rounded-xl shadow-2xl p-10 relative overflow-hidden">
+                    <!-- LADO ESQUERDO: CONTROLES DE BUSCA E RANKING -->
+                    <div class="lg:col-span-1 space-y-6">
                         
-                        <!-- Marca d'água -->
-                        <i class="fas fa-chart-line absolute -bottom-10 -right-10 text-[200px] text-gray-50 opacity-50 rotate-12 pointer-events-none"></i>
-
-                        <!-- Cabeçalho do PDF -->
-                        <div class="flex justify-between items-center border-b-2 border-gray-100 pb-6 mb-8 relative z-10">
-                            <div>
-                                <h1 class="text-3xl font-black text-slate-900">Relatório de Impacto</h1>
-                                <p class="text-sm text-gray-500 font-bold uppercase tracking-widest mt-1">Portal STL - Resultados Online</p>
+                        <!-- Bloco: Pesquisa de Empresa -->
+                        <div class="bg-gray-50 p-5 rounded-xl border border-gray-200">
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Procurar Cliente</label>
+                            <div class="relative w-full">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </div>
+                                <input type="text" id="buscaRelatorio" class="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-amber-500 focus:border-amber-500 text-sm outline-none transition" placeholder="Digite o nome da empresa..." autocomplete="off">
+                                
+                                <!-- Dropdown Customizado (Lista de Resultados) -->
+                                <div id="listaRelatorio" class="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto hidden">
+                                    <!-- Preenchido via JavaScript -->
+                                </div>
                             </div>
-                            <img src="/uploads/portallogomarca.png" class="h-10 opacity-80" alt="Logo">
                         </div>
 
-                        <!-- Dados do Cliente -->
-                        <div class="mb-10 relative z-10">
-                            <h2 id="rep-nome" class="text-2xl font-bold text-slate-800">Nome do Cliente</h2>
-                            <p class="text-gray-500 text-sm mt-1 flex items-center gap-2">
-                                <span id="rep-plano" class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-bold uppercase">Plano</span>
-                                <span id="rep-cat" class="text-gray-400"><i class="fas fa-tag"></i> Categoria</span>
-                            </p>
-                        </div>
-
-                        <!-- Grid de Métricas Principais -->
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-6 mb-10 relative z-10">
+                        <!-- Bloco: Ranking Top 10 -->
+                        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                            <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <i class="fas fa-trophy text-amber-500 text-lg"></i> Top 10 Acessos
+                            </h3>
                             
-                            <!-- Visitas na Página -->
-                            <div class="bg-blue-50 border border-blue-100 p-5 rounded-xl text-center">
-                                <i class="fas fa-eye text-blue-500 text-3xl mb-2"></i>
-                                <h3 id="rep-acessos" class="text-4xl font-black text-slate-800">0</h3>
-                                <p class="text-xs text-gray-500 font-bold uppercase mt-1">Acessos à Vitrine</p>
+                            <div class="space-y-2.5">
+                                <% if(top10Empresas.length > 0) { %>
+                                    <% top10Empresas.forEach((emp, index) => { %>
+                                        <div class="flex items-center justify-between p-2.5 rounded-lg border cursor-pointer transition transform hover:scale-[1.02] <%= index === 0 ? 'bg-amber-50 border-amber-200' : (index === 1 ? 'bg-slate-100 border-slate-300' : (index === 2 ? 'bg-orange-50 border-orange-200' : 'bg-white border-gray-100 hover:bg-gray-50 hover:border-gray-300')) %>" onclick="selecionarEmpresaRelatorio(<%= emp.id %>)">
+                                            <div class="flex items-center gap-3 overflow-hidden">
+                                                <div class="w-6 text-center font-black text-lg <%= index === 0 ? 'text-amber-500' : (index === 1 ? 'text-slate-400' : (index === 2 ? 'text-orange-500' : 'text-gray-300 text-base')) %>">
+                                                    <%= index + 1 %>º
+                                                </div>
+                                                <div class="text-sm font-bold <%= index < 3 ? 'text-gray-900' : 'text-gray-700' %> truncate" title="<%= emp.nome %>"><%= emp.nome %></div>
+                                            </div>
+                                            <div class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md ml-2 flex-shrink-0 border border-blue-100">
+                                                <%= emp.acessos || 0 %> <i class="fas fa-eye text-[10px] ml-0.5"></i>
+                                            </div>
+                                        </div>
+                                    <% }) %>
+                                <% } else { %>
+                                    <p class="text-sm text-gray-500 text-center py-4">Nenhum dado de acesso ainda.</p>
+                                <% } %>
                             </div>
-
-                            <!-- Cliques no WhatsApp (Simulado até Rota Secreta) -->
-                            <div class="bg-green-50 border border-green-100 p-5 rounded-xl text-center">
-                                <i class="fab fa-whatsapp text-green-500 text-3xl mb-2"></i>
-                                <h3 id="rep-wpp" class="text-4xl font-black text-slate-800">0</h3>
-                                <p class="text-xs text-gray-500 font-bold uppercase mt-1">Cliques no WhatsApp</p>
-                            </div>
-
-                            <!-- Cliques no Mapa -->
-                            <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl text-center">
-                                <i class="fas fa-map-marked-alt text-slate-500 text-3xl mb-2"></i>
-                                <h3 id="rep-mapa" class="text-4xl font-black text-slate-800">0</h3>
-                                <p class="text-xs text-gray-500 font-bold uppercase mt-1">Rotas no Mapa</p>
-                            </div>
-
-                            <!-- Cliques nas Redes Sociais -->
-                            <div class="bg-pink-50 border border-pink-100 p-5 rounded-xl text-center">
-                                <i class="fab fa-instagram text-pink-500 text-3xl mb-2"></i>
-                                <h3 id="rep-social" class="text-4xl font-black text-slate-800">0</h3>
-                                <p class="text-xs text-gray-500 font-bold uppercase mt-1">Acessos Sociais</p>
-                            </div>
-
-                            <!-- Compartilhamentos -->
-                            <div class="bg-purple-50 border border-purple-100 p-5 rounded-xl text-center md:col-span-2">
-                                <i class="fas fa-share-nodes text-purple-500 text-3xl mb-2"></i>
-                                <h3 id="rep-share" class="text-4xl font-black text-slate-800">0</h3>
-                                <p class="text-xs text-gray-500 font-bold uppercase mt-1">Compartilhamentos e Boca a Boca</p>
-                            </div>
-
-                        </div>
-
-                        <!-- Rodapé do PDF -->
-                        <div class="border-t-2 border-gray-100 pt-6 mt-8 text-center relative z-10">
-                            <p class="text-xs text-gray-400 font-medium">Relatório gerado automaticamente pelo sistema de inteligência de dados da agência Resultados Online.</p>
-                            <p class="text-xs text-gray-400 font-medium mt-1">Data de Emissão: <span id="data-hoje"></span></p>
                         </div>
                     </div>
-                </div>
 
+                    <!-- LADO DIREITO: O RELATÓRIO PDF -->
+                    <div class="lg:col-span-2 flex flex-col h-full">
+                        <div class="p-4 bg-gray-50 border border-gray-200 rounded-t-xl flex flex-col sm:flex-row justify-between items-center gap-3">
+                            <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                                <i class="fas fa-file-invoice text-slate-400"></i> Relatório do Cliente
+                            </h3>
+                            <button onclick="gerarPDF()" id="btnDownloadPDF" class="w-full sm:w-auto bg-slate-900 hover:bg-black text-white font-bold py-2.5 px-5 rounded-md shadow transition flex items-center justify-center gap-2 opacity-50 cursor-not-allowed pointer-events-none text-xs uppercase tracking-wider">
+                                <i class="fas fa-file-pdf text-red-400 text-base"></i> Exportar para PDF
+                            </button>
+                        </div>
+                        
+                        <!-- Área de Visualização do Relatório -->
+                        <div class="p-6 bg-gray-200 flex-grow flex justify-center items-start min-h-[500px] border border-t-0 border-gray-200 rounded-b-xl relative overflow-hidden">
+                            
+                            <!-- Placeholder (Aparece enquanto não clica em ninguém) -->
+                            <div id="placeholderRelatorio" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 bg-gray-100/80 z-10">
+                                <i class="fas fa-search-chart text-6xl mb-4 opacity-50 text-amber-500"></i>
+                                <p class="font-medium text-sm text-center">Pesquise uma empresa ou clique no ranking<br>para gerar o documento de BI.</p>
+                            </div>
+
+                            <!-- O RELATÓRIO VISUAL (Que será impresso no PDF) -->
+                            <div id="areaRelatorio" class="w-full relative z-0">
+                                <div id="folhaPDF" class="bg-white w-full max-w-3xl rounded-xl shadow-lg p-10 relative overflow-hidden mx-auto">
+                                    
+                                    <!-- Marca d'água -->
+                                    <i class="fas fa-chart-line absolute -bottom-10 -right-10 text-[200px] text-gray-50 opacity-50 rotate-12 pointer-events-none"></i>
+
+                                    <!-- Cabeçalho do PDF -->
+                                    <div class="flex justify-between items-center border-b-2 border-gray-100 pb-6 mb-8 relative z-10">
+                                        <div>
+                                            <h1 class="text-3xl font-black text-slate-900">Relatório de Impacto</h1>
+                                            <p class="text-sm text-gray-500 font-bold uppercase tracking-widest mt-1">Portal STL - Resultados Online</p>
+                                        </div>
+                                        <img src="/uploads/portallogomarca.png" class="h-10 opacity-80" alt="Logo">
+                                    </div>
+
+                                    <!-- Dados do Cliente -->
+                                    <div class="mb-10 relative z-10">
+                                        <h2 id="rep-nome" class="text-2xl font-bold text-slate-800">Nome do Cliente</h2>
+                                        <p class="text-gray-500 text-sm mt-1 flex items-center gap-2">
+                                            <span id="rep-plano" class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider">Plano</span>
+                                            <span id="rep-cat" class="text-gray-400"><i class="fas fa-tag"></i> Categoria</span>
+                                        </p>
+                                    </div>
+
+                                    <!-- Grid de Métricas Principais -->
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-6 mb-10 relative z-10">
+                                        
+                                        <!-- Visitas na Página -->
+                                        <div class="bg-blue-50 border border-blue-100 p-5 rounded-xl text-center">
+                                            <i class="fas fa-eye text-blue-500 text-3xl mb-2"></i>
+                                            <h3 id="rep-acessos" class="text-4xl font-black text-slate-800">0</h3>
+                                            <p class="text-xs text-gray-500 font-bold uppercase mt-1">Acessos à Vitrine</p>
+                                        </div>
+
+                                        <!-- Cliques no WhatsApp -->
+                                        <div class="bg-green-50 border border-green-100 p-5 rounded-xl text-center">
+                                            <i class="fab fa-whatsapp text-green-500 text-3xl mb-2"></i>
+                                            <h3 id="rep-wpp" class="text-4xl font-black text-slate-800">0</h3>
+                                            <p class="text-xs text-gray-500 font-bold uppercase mt-1">Cliques no WhatsApp</p>
+                                        </div>
+
+                                        <!-- Cliques no Mapa -->
+                                        <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl text-center">
+                                            <i class="fas fa-map-marked-alt text-slate-500 text-3xl mb-2"></i>
+                                            <h3 id="rep-mapa" class="text-4xl font-black text-slate-800">0</h3>
+                                            <p class="text-xs text-gray-500 font-bold uppercase mt-1">Rotas no Mapa</p>
+                                        </div>
+
+                                        <!-- Cliques nas Redes Sociais -->
+                                        <div class="bg-pink-50 border border-pink-100 p-5 rounded-xl text-center">
+                                            <i class="fab fa-instagram text-pink-500 text-3xl mb-2"></i>
+                                            <h3 id="rep-social" class="text-4xl font-black text-slate-800">0</h3>
+                                            <p class="text-xs text-gray-500 font-bold uppercase mt-1">Acessos Sociais</p>
+                                        </div>
+
+                                        <!-- Compartilhamentos -->
+                                        <div class="bg-purple-50 border border-purple-100 p-5 rounded-xl text-center md:col-span-2">
+                                            <i class="fas fa-share-nodes text-purple-500 text-3xl mb-2"></i>
+                                            <h3 id="rep-share" class="text-4xl font-black text-slate-800">0</h3>
+                                            <p class="text-xs text-gray-500 font-bold uppercase mt-1">Compartilhamentos e Boca a Boca</p>
+                                        </div>
+
+                                    </div>
+
+                                    <!-- Rodapé do PDF -->
+                                    <div class="border-t-2 border-gray-100 pt-6 mt-8 text-center relative z-10">
+                                        <p class="text-xs text-gray-400 font-medium">Relatório gerado automaticamente pelo sistema de inteligência de dados da agência Resultados Online.</p>
+                                        <p class="text-xs text-gray-400 font-medium mt-1">Data de Emissão: <span id="data-hoje"></span></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
             </div>
 
         </section>
@@ -361,7 +430,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             
-            // --- LÓGICA DO FILTRO DA TABELA ---
+            // --- LÓGICA DO FILTRO DA TABELA PRINCIPAL ---
             const inputPesquisa = document.getElementById('pesquisaEmpresa');
             const selectCategoria = document.getElementById('filtroCategoria');
             const linhasEmpresa = document.querySelectorAll('.linha-empresa');
@@ -390,51 +459,90 @@
                 selectCategoria.addEventListener('change', filtrarTabela);
             }
 
-            // --- LÓGICA DO RELATÓRIO (BI) ---
-            const selectRelatorio = document.getElementById('selectClienteReport');
-            const areaRelatorio = document.getElementById('areaRelatorio');
-            const btnDownload = document.getElementById('btnDownloadPDF');
+            // --- LÓGICA DO BUSCADOR DE RELATÓRIO (CUSTOM DROPDOWN) ---
+            const inputBuscaRelatorio = document.getElementById('buscaRelatorio');
+            const listaRelatorio = document.getElementById('listaRelatorio');
 
-            if(selectRelatorio) {
-                selectRelatorio.addEventListener('change', function() {
-                    const idSelecionado = parseInt(this.value);
-                    
-                    if(!idSelecionado) {
-                        areaRelatorio.classList.add('hidden');
-                        btnDownload.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+            if (inputBuscaRelatorio && listaRelatorio) {
+                inputBuscaRelatorio.addEventListener('input', function() {
+                    const termo = this.value.toLowerCase().trim();
+                    listaRelatorio.innerHTML = ''; // Limpa a lista
+
+                    if (termo.length === 0) {
+                        listaRelatorio.classList.add('hidden');
                         return;
                     }
 
-                    // Busca os dados da empresa selecionada
-                    const emp = bdEmpresas.find(e => e.id === idSelecionado);
-                    
-                    if(emp) {
-                        // Preenche a folha do PDF
-                        document.getElementById('rep-nome').innerText = emp.nome;
-                        document.getElementById('rep-cat').innerText = emp.categoria_nome || 'Local';
-                        document.getElementById('rep-plano').innerText = emp.plano_id == 3 ? 'Patrocinado VIP' : (emp.plano_id == 2 ? 'Vitrine Premium' : 'Plano Grátis');
-                        
-                        // 📊 O Dado Real que temos hoje
-                        const acessos = emp.acessos || 0;
-                        document.getElementById('rep-acessos').innerText = acessos;
+                    // Filtra as empresas pelo termo
+                    const filtrados = bdEmpresas.filter(emp => emp.nome.toLowerCase().includes(termo));
 
-                        // ⚠️ SIMULAÇÃO DOS OUTROS DADOS: Como ainda não criamos essas colunas na base de dados (Rota Secreta), 
-                        // eu programo um cálculo de proporção realista baseado nas visitas reais, para você ter uma noção visual do funil.
-                        document.getElementById('rep-wpp').innerText = Math.floor(acessos * 0.15); // 15% clica no WhatsApp
-                        document.getElementById('rep-mapa').innerText = Math.floor(acessos * 0.25); // 25% clica no mapa
-                        document.getElementById('rep-social').innerText = Math.floor(acessos * 0.10); // 10% vai pro instagram
-                        document.getElementById('rep-share').innerText = Math.floor(acessos * 0.05); // 5% partilha
+                    if (filtrados.length === 0) {
+                        listaRelatorio.innerHTML = '<div class="p-4 text-sm text-gray-500 text-center font-medium">Nenhuma empresa encontrada com esse nome.</div>';
+                    } else {
+                        filtrados.forEach(emp => {
+                            const div = document.createElement('div');
+                            div.className = 'p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 flex justify-between items-center transition';
+                            div.innerHTML = `
+                                <div>
+                                    <div class="font-bold text-sm text-gray-800 truncate max-w-[200px]">${emp.nome}</div>
+                                    <div class="text-[10px] text-gray-500 uppercase font-bold mt-0.5">${emp.categoria_nome || 'Sem categoria'}</div>
+                                </div>
+                                <div class="text-[10px] uppercase bg-amber-100 text-amber-800 px-2 py-1 rounded font-bold ml-2">
+                                    ${emp.plano_id == 3 ? '<i class="fas fa-crown"></i> Patroc.' : (emp.plano_id == 2 ? '<i class="fas fa-star"></i> Premium' : 'Start')}
+                                </div>
+                            `;
+                            
+                            // Ação ao clicar no item da lista
+                            div.onclick = () => {
+                                window.selecionarEmpresaRelatorio(emp.id);
+                                inputBuscaRelatorio.value = emp.nome; // Preenche o campo com o nome escolhido
+                                listaRelatorio.classList.add('hidden'); // Esconde a lista
+                            };
+                            
+                            listaRelatorio.appendChild(div);
+                        });
+                    }
+                    listaRelatorio.classList.remove('hidden');
+                });
 
-                        // Data de Hoje
-                        document.getElementById('data-hoje').innerText = new Date().toLocaleDateString('pt-BR');
-
-                        // Mostra o relatório e ativa botão PDF
-                        areaRelatorio.classList.remove('hidden');
-                        btnDownload.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                // Fechar o menu dropdown se clicar fora dele
+                document.addEventListener('click', (e) => {
+                    if (!inputBuscaRelatorio.contains(e.target) && !listaRelatorio.contains(e.target)) {
+                        listaRelatorio.classList.add('hidden');
                     }
                 });
             }
         });
+
+        // --- FUNÇÃO GLOBAL DO BI: PREENCHER E EXIBIR O RELATÓRIO ---
+        window.selecionarEmpresaRelatorio = function(idSelecionado) {
+            const emp = bdEmpresas.find(e => e.id === idSelecionado);
+            if(!emp) return;
+
+            // Transição visual: Some com o placeholder, exibe a folha
+            document.getElementById('placeholderRelatorio').classList.add('hidden');
+            document.getElementById('areaRelatorio').classList.remove('hidden');
+
+            // Preenche dados do PDF
+            document.getElementById('rep-nome').innerText = emp.nome;
+            document.getElementById('rep-cat').innerText = emp.categoria_nome || 'Local';
+            document.getElementById('rep-plano').innerText = emp.plano_id == 3 ? 'Patrocinado VIP' : (emp.plano_id == 2 ? 'Vitrine Premium' : 'Plano Grátis');
+            
+            // 📊 O Dado Real
+            const acessos = emp.acessos || 0;
+            document.getElementById('rep-acessos').innerText = acessos;
+
+            // ⚠️ SIMULAÇÃO LÓGICA DO FUNIL (Até termos a Rota Secreta)
+            document.getElementById('rep-wpp').innerText = Math.floor(acessos * 0.15); // 15%
+            document.getElementById('rep-mapa').innerText = Math.floor(acessos * 0.25); // 25%
+            document.getElementById('rep-social').innerText = Math.floor(acessos * 0.10); // 10%
+            document.getElementById('rep-share').innerText = Math.floor(acessos * 0.05); // 5%
+
+            document.getElementById('data-hoje').innerText = new Date().toLocaleDateString('pt-BR');
+
+            // Libera o botão de Download
+            document.getElementById('btnDownloadPDF').classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+        };
 
         // --- FUNÇÃO DE GERAR PDF MAGICO ---
         function gerarPDF() {
@@ -443,7 +551,7 @@
             
             const opcoes = {
                 margin:       0,
-                filename:     `Relatorio-PortalSTL-${nomeCliente.replace(/ /g, '-')}.pdf`,
+                filename:     `BI-PortalSTL-${nomeCliente.replace(/ /g, '-')}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true },
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
