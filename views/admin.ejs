@@ -566,15 +566,15 @@
             document.getElementById('rep-cat').innerText = emp.categoria_nome || 'Local';
             document.getElementById('rep-plano').innerText = emp.plano_id == 3 ? 'Patrocinado VIP' : (emp.plano_id == 2 ? 'Vitrine Premium' : 'Plano Grátis');
             
-            // 📊 O Dado Real
+            // 📊 O Dado Real (Acessos)
             const acessos = emp.acessos || 0;
             document.getElementById('rep-acessos').innerText = acessos;
 
-            // ⚠️ SIMULAÇÃO LÓGICA DO FUNIL
-            document.getElementById('rep-wpp').innerText = Math.floor(acessos * 0.15); // 15%
-            document.getElementById('rep-mapa').innerText = Math.floor(acessos * 0.25); // 25%
-            document.getElementById('rep-social').innerText = Math.floor(acessos * 0.10); // 10%
-            document.getElementById('rep-share').innerText = Math.floor(acessos * 0.05); // 5%
+            // 🚨 DADOS REAIS DO BI (Fim da simulação matemática)
+            document.getElementById('rep-wpp').innerText = emp.cliques_whatsapp || 0;
+            document.getElementById('rep-mapa').innerText = emp.cliques_mapa || 0;
+            document.getElementById('rep-social').innerText = emp.cliques_social || 0;
+            document.getElementById('rep-share').innerText = emp.compartilhamentos || 0;
 
             // 🚨 NOVO: INTELIGÊNCIA DE BUSCA (SEO) 🚨
             const catObj = bdCategorias.find(c => c.id === emp.categoria_id);
@@ -596,9 +596,8 @@
                 containerKeywords.innerHTML = `<span class="text-xs text-amber-700 italic">Nenhum termo SEO configurado.</span>`;
             }
 
-            // 🚨 NOVO: SIMULAÇÃO DE VOLUME DE BUSCAS NO SEGMENTO 🚨
-            // Para mostrar autoridade, calculamos que o volume de buscas daquela categoria é cerca de 2.5x a 3x maior que os acessos diretos da empresa.
-            const volumeSimulado = Math.floor((acessos * 2.8) + 34); // +34 garante que nunca seja zero, mesmo para empresas novas
+            // 🚨 SIMULAÇÃO DE VOLUME DE BUSCAS NO SEGMENTO MANTIDA (Apenas como argumento de Vendas) 🚨
+            const volumeSimulado = Math.floor((acessos * 2.8) + 34); 
             document.getElementById('rep-vol-buscas').innerText = volumeSimulado.toLocaleString('pt-BR');
 
             // Data
