@@ -168,6 +168,7 @@
                         <!-- WhatsApp Premium -->
                         <% if(empresa.whatsapp) { %>
                             <a href="https://wa.me/55<%= empresa.whatsapp.replace(/\D/g,'') %>?text=Ol%C3%A1!%20Vi%20o%20seu%20an%C3%BAncio%20no%20Portal%20STL." target="_blank" 
+                               onclick="gtag('event', 'clique_whatsapp', { 'nome_empresa': '<%= empresa.nome %>', 'categoria': '<%= empresa.categoria_nome %>' });"
                                class="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#1da851] text-white font-black py-4 rounded-2xl transition shadow-lg shadow-green-200 text-lg">
                                 <i class="fab fa-whatsapp text-2xl"></i> WHATSAPP
                             </a>
@@ -177,6 +178,7 @@
                         <div class="grid grid-cols-2 gap-3 mt-4">
                             <% if(empresa.instagram) { %>
                                 <a href="https://instagram.com/<%= empresa.instagram.replace('@','') %>" target="_blank" 
+                                   onclick="gtag('event', 'clique_instagram', { 'nome_empresa': '<%= empresa.nome %>' });"
                                    class="flex items-center justify-center gap-2 w-full bg-slate-50 hover:bg-pink-50 text-slate-700 hover:text-pink-600 font-bold py-3 rounded-xl border border-slate-200 hover:border-pink-200 transition text-sm">
                                     <i class="fab fa-instagram text-lg"></i> Instagram
                                 </a>
@@ -184,6 +186,7 @@
 
                             <% if(empresa.facebook) { %>
                                 <a href="<%= empresa.facebook.startsWith('http') ? empresa.facebook : 'https://' + empresa.facebook %>" target="_blank" 
+                                   onclick="gtag('event', 'clique_facebook', { 'nome_empresa': '<%= empresa.nome %>' });"
                                    class="flex items-center justify-center gap-2 w-full bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 font-bold py-3 rounded-xl border border-slate-200 hover:border-blue-200 transition text-sm">
                                     <i class="fab fa-facebook text-lg"></i> Facebook
                                 </a>
@@ -193,6 +196,7 @@
                         <!-- Site Oficial -->
                         <% if(empresa.site) { %>
                             <a href="<%= empresa.site.startsWith('http') ? empresa.site : 'https://' + empresa.site %>" target="_blank" 
+                               onclick="gtag('event', 'clique_site', { 'nome_empresa': '<%= empresa.nome %>' });"
                                class="flex items-center justify-center gap-2 w-full bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-700 font-bold py-3 rounded-xl transition text-sm mt-2">
                                 <i class="fas fa-globe text-lg"></i> Visitar Site Oficial
                             </a>
@@ -215,7 +219,9 @@
                     </div>
 
                     <% if(empresa.link_maps) { %>
-                        <a href="<%= empresa.link_maps %>" target="_blank" class="w-full bg-white hover:bg-amber-500 text-slate-900 hover:text-white font-black py-3.5 rounded-xl transition flex items-center justify-center gap-2 relative shadow-md">
+                        <a href="<%= empresa.link_maps %>" target="_blank" 
+                           onclick="gtag('event', 'clique_mapa', { 'nome_empresa': '<%= empresa.nome %>' });"
+                           class="w-full bg-white hover:bg-amber-500 text-slate-900 hover:text-white font-black py-3.5 rounded-xl transition flex items-center justify-center gap-2 relative shadow-md">
                             <i class="fas fa-route"></i> Abrir no Google Maps
                         </a>
                     <% } %>
@@ -261,7 +267,30 @@
         <img id="lightbox-img" src="" class="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl" onclick="event.stopPropagation()">
     </div>
 
-    <!-- SCRIPT DO LIGHTBOX -->
+    <!-- ========================================== -->
+    <!-- 🍪 POP-UP LGPD (AVISO DE COOKIES)          -->
+    <!-- ========================================== -->
+    <div id="lgpd-banner" class="fixed bottom-4 left-4 right-4 md:left-auto md:right-8 md:w-[400px] bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 z-[9999] transform translate-y-full opacity-0 transition-all duration-500 flex flex-col pointer-events-none">
+        <div class="flex items-start gap-4">
+            <div class="text-4xl">🍪</div>
+            <div>
+                <h4 class="font-black text-slate-900 text-lg mb-1">Privacidade e Cookies</h4>
+                <p class="text-sm text-slate-500 leading-relaxed mb-4">
+                    Utilizamos cookies para melhorar a sua experiência, personalizar anúncios e gerar estatísticas de acesso. Ao continuar a navegar, você concorda com a nossa política de privacidade.
+                </p>
+            </div>
+        </div>
+        <div class="flex gap-3 mt-auto">
+            <button id="lgpd-recusar" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition">
+                Apenas Essenciais
+            </button>
+            <button id="lgpd-aceitar" class="flex-1 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm shadow-md shadow-amber-500/20 transition">
+                Aceitar Tudo
+            </button>
+        </div>
+    </div>
+
+    <!-- SCRIPT DO LIGHTBOX, COMPARTILHAMENTO E LGPD -->
     <script>
         function abrirLightbox(src) {
             document.getElementById('lightbox-img').src = src;
@@ -309,6 +338,37 @@
                 btn.innerHTML = iconOriginal;
             }, 2000); // Volta ao normal após 2 segundos
         }
+
+        // 🚨 LÓGICA DO LGPD COM LOCALSTORAGE 🚨
+        document.addEventListener("DOMContentLoaded", function() {
+            const banner = document.getElementById('lgpd-banner');
+            const btnAceitar = document.getElementById('lgpd-aceitar');
+            const btnRecusar = document.getElementById('lgpd-recusar');
+
+            // Verifica se o usuário já respondeu antes
+            if (!localStorage.getItem('stl_lgpd_consent')) {
+                // Animação de entrada suave após 1 segundo
+                setTimeout(() => {
+                    banner.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none');
+                }, 1000);
+            }
+
+            function fecharBanner(resposta) {
+                // Salva a decisão
+                localStorage.setItem('stl_lgpd_consent', resposta);
+                
+                // Dispara o evento pro Google Analytics se aceitar
+                if(resposta === 'aceitou' && typeof gtag === 'function') {
+                    gtag('event', 'consentimento_lgpd', { 'status': 'aceito' });
+                }
+
+                // Animação de saída
+                banner.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none');
+            }
+
+            btnAceitar.addEventListener('click', () => fecharBanner('aceitou'));
+            btnRecusar.addEventListener('click', () => fecharBanner('recusou'));
+        });
     </script>
 
 </body>
