@@ -127,35 +127,35 @@
                                 <i class="fas fa-map-marker-alt text-amber-500 mr-1"></i> <%= local.endereco || 'Endereço não informado' %>
                             </p>
                             
-                            <!-- Ícones de Contato Mínimos (BLINDADOS COM GTAG) -->
+                            <!-- Ícones de Contato Mínimos (BLINDADOS COM GTAG E BI NATIVO) -->
                             <div class="flex gap-4 mt-4 text-slate-400 items-center">
                                 <a href="<%= local.link_maps ? local.link_maps : 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(local.nome + ' São Thomé das Letras') %>" target="_blank" 
-                                   onclick="gtag('event', 'clique_mapa', { 'nome_empresa': '<%= local.nome %>' });"
+                                   onclick="gtag('event', 'clique_mapa', { 'nome_empresa': '<%= local.nome %>' }); registrarClique('<%= local.slug %>', 'mapa');"
                                    class="hover:text-amber-500 transition" title="Ver no Mapa">
                                     <i class="fas fa-map-marked-alt text-lg"></i>
                                 </a>
 
                                 <% if(local.whatsapp && local.plano_id == 1) { %>
                                     <a href="https://wa.me/55<%= local.whatsapp.replace(/\D/g,'') %>?text=Ol%C3%A1!%20Vi%20o%20seu%20an%C3%BAncio%20no%20Portal%20STL." target="_blank" 
-                                       onclick="gtag('event', 'clique_whatsapp', { 'nome_empresa': '<%= local.nome %>' });"
+                                       onclick="gtag('event', 'clique_whatsapp', { 'nome_empresa': '<%= local.nome %>' }); registrarClique('<%= local.slug %>', 'whatsapp');"
                                        class="text-[#25D366] hover:text-[#128C7E] transition" title="WhatsApp"><i class="fab fa-whatsapp text-xl"></i></a>
                                 <% } %>
                                 
                                 <% if(local.facebook) { %>
                                     <a href="<%= local.facebook.startsWith('http') ? local.facebook : 'https://' + local.facebook %>" target="_blank" 
-                                       onclick="gtag('event', 'clique_facebook', { 'nome_empresa': '<%= local.nome %>' });"
+                                       onclick="gtag('event', 'clique_facebook', { 'nome_empresa': '<%= local.nome %>' }); registrarClique('<%= local.slug %>', 'social');"
                                        class="hover:text-blue-600 transition" title="Facebook"><i class="fab fa-facebook text-lg"></i></a>
                                 <% } %>
                                 
                                 <% if(local.instagram) { %>
                                     <a href="<%= local.instagram.startsWith('http') ? local.instagram : 'https://' + local.instagram %>" target="_blank" 
-                                       onclick="gtag('event', 'clique_instagram', { 'nome_empresa': '<%= local.nome %>' });"
+                                       onclick="gtag('event', 'clique_instagram', { 'nome_empresa': '<%= local.nome %>' }); registrarClique('<%= local.slug %>', 'social');"
                                        class="hover:text-pink-600 transition" title="Instagram"><i class="fab fa-instagram text-lg"></i></a>
                                 <% } %>
                                 
                                 <% if(local.site) { %>
                                     <a href="<%= local.site.startsWith('http') ? local.site : 'https://' + local.site %>" target="_blank" 
-                                       onclick="gtag('event', 'clique_site', { 'nome_empresa': '<%= local.nome %>' });"
+                                       onclick="gtag('event', 'clique_site', { 'nome_empresa': '<%= local.nome %>' }); registrarClique('<%= local.slug %>', 'social');"
                                        class="hover:text-slate-700 transition" title="Site Oficial"><i class="fas fa-globe text-lg"></i></a>
                                 <% } %>
                             </div>
@@ -168,7 +168,7 @@
 
                                 <% if(local.whatsapp) { %>
                                     <a href="https://wa.me/55<%= local.whatsapp.replace(/\D/g,'') %>?text=Ol%C3%A1!%20Vi%20o%20seu%20an%C3%BAncio%20no%20Portal%20STL%20e%20gostaria%20de%20mais%20informa%C3%A7%C3%B5es." target="_blank" 
-                                       onclick="gtag('event', 'clique_whatsapp', { 'nome_empresa': '<%= local.nome %>' });"
+                                       onclick="gtag('event', 'clique_whatsapp', { 'nome_empresa': '<%= local.nome %>' }); registrarClique('<%= local.slug %>', 'whatsapp');"
                                        class="w-full bg-[#25D366] text-white font-bold py-3 rounded-xl text-sm shadow-sm hover:bg-[#128C7E] transition flex items-center justify-center gap-2">
                                         <i class="fab fa-whatsapp text-lg"></i> WhatsApp
                                     </a>
@@ -198,5 +198,13 @@
         </div>
     </footer>
 
+    <!-- 📡 SCRIPT DE RASTREIO DE BI (Antena) -->
+    <script>
+        // Função que envia o clique silenciosamente para o nosso banco de dados
+        function registrarClique(slug, tipo) {
+            fetch(`/api/track/${slug}/${tipo}`, { method: 'POST' })
+                .catch(e => console.log('Erro ao rastrear clique:', e));
+        }
+    </script>
 </body>
 </html>
