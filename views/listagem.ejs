@@ -35,32 +35,26 @@
         </div>
     </nav>
 
-    <!-- 🚀 BARRA DE FILTROS (Novo Design: Igual à Página Inicial) -->
-    <div class="bg-white py-8 md:py-10 border-b border-slate-200 shadow-sm">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <form action="/explorar" method="GET" class="w-full bg-white flex flex-col md:flex-row items-center p-2 rounded-2xl md:rounded-full shadow-lg border border-slate-100 transition-all focus-within:ring-4 focus-within:ring-amber-500/20">
-                
-                <!-- Ícone Lupa -->
-                <div class="pl-5 text-slate-400 hidden md:block">
-                    <i class="fas fa-search text-xl"></i>
+    <!-- BARRA DE FILTROS (Design Clássico Azul Escuro Restaurado) -->
+    <div class="bg-slate-900 py-8 shadow-inner">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <form action="/explorar" method="GET" class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i>
+                        <input type="text" name="busca" value="<%= buscaAtual || '' %>" placeholder="O que procura?" class="w-full pl-11 pr-4 py-3 rounded-lg border-none focus:ring-2 focus:ring-amber-500 outline-none shadow-sm text-slate-800">
+                    </div>
                 </div>
-                
-                <!-- Campo de Texto -->
-                <input type="text" name="busca" value="<%= buscaAtual || '' %>" placeholder="Pizzarias, Pousadas, Cachoeiras..." class="w-full py-3 md:py-4 px-4 bg-transparent text-slate-700 text-base md:text-lg focus:outline-none placeholder-slate-400">
-                
-                <!-- Divisor e Categorias -->
-                <div class="w-full md:w-auto border-t md:border-t-0 md:border-l border-slate-200 px-4 py-2 md:py-0 flex items-center">
-                    <select name="categoria" class="w-full md:w-56 bg-transparent border-none text-slate-600 font-bold focus:outline-none focus:ring-0 cursor-pointer text-base md:text-lg outline-none appearance-none">
+                <div class="md:w-64">
+                    <select name="categoria" class="w-full px-4 py-3 rounded-lg border-none focus:ring-2 focus:ring-amber-500 outline-none shadow-sm bg-white text-slate-700 cursor-pointer">
                         <option value="">Todas as Categorias</option>
                         <% categorias.forEach(cat => { %>
                             <option value="<%= cat.id %>" <%= categoriaAtual == cat.id ? 'selected' : '' %>><%= cat.nome %></option>
                         <% }) %>
                     </select>
                 </div>
-
-                <!-- Botão Buscar -->
-                <button type="submit" class="w-full md:w-auto mt-2 md:mt-0 bg-amber-500 hover:bg-amber-600 text-white font-bold text-base md:text-lg py-3 md:py-4 px-8 rounded-full transition shadow-md whitespace-nowrap">
-                    Buscar
+                <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-8 rounded-lg shadow-md transition whitespace-nowrap">
+                    Filtrar Resultados
                 </button>
             </form>
         </div>
@@ -89,10 +83,10 @@
                             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 block"><%= empresa.categoria_nome || 'Local' %></span>
                             <h3 class="text-xl font-bold text-gray-900 leading-tight mb-4"><%= empresa.nome %></h3>
                             
-                            <!-- Redes e Contatos com GATILHOS DO ANALYTICS -->
+                            <!-- Redes e Contatos com GATILHOS DO ANALYTICS BLINDADOS -->
                             <div class="mt-auto pt-4 border-t border-gray-100 flex flex-wrap gap-3 justify-start">
                                 
-                                <% if (empresa.whatsapp) { %>
+                                <% if (empresa.whatsapp && String(empresa.whatsapp).length > 5) { %>
                                     <a href="https://wa.me/<%= empresa.whatsapp.replace(/\D/g, '') %>" target="_blank"
                                        onclick="gtag('event', 'clique_whatsapp', { 'nome_empresa': '<%= empresa.nome %>', 'categoria': '<%= empresa.categoria_nome %>' });"
                                        class="w-10 h-10 rounded-full bg-green-50 text-green-600 hover:bg-green-500 hover:text-white flex items-center justify-center transition shadow-sm" title="WhatsApp">
@@ -100,7 +94,7 @@
                                     </a>
                                 <% } %>
                                 
-                                <% if (empresa.instagram) { %>
+                                <% if (empresa.instagram && String(empresa.instagram).length > 2) { %>
                                     <a href="https://instagram.com/<%= empresa.instagram.replace('@', '') %>" target="_blank"
                                        onclick="gtag('event', 'clique_instagram', { 'nome_empresa': '<%= empresa.nome %>' });"
                                        class="w-10 h-10 rounded-full bg-pink-50 text-pink-600 hover:bg-pink-500 hover:text-white flex items-center justify-center transition shadow-sm" title="Instagram">
@@ -108,7 +102,7 @@
                                     </a>
                                 <% } %>
                                 
-                                <% if (empresa.facebook) { %>
+                                <% if (empresa.facebook && String(empresa.facebook).length > 5) { %>
                                     <a href="<%= empresa.facebook %>" target="_blank"
                                        onclick="gtag('event', 'clique_facebook', { 'nome_empresa': '<%= empresa.nome %>' });"
                                        class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white flex items-center justify-center transition shadow-sm" title="Facebook">
@@ -116,7 +110,7 @@
                                     </a>
                                 <% } %>
                                 
-                                <% if (empresa.link_maps) { %>
+                                <% if (empresa.link_maps && String(empresa.link_maps).length > 5) { %>
                                     <a href="<%= empresa.link_maps %>" target="_blank"
                                        onclick="gtag('event', 'clique_mapa', { 'nome_empresa': '<%= empresa.nome %>' });"
                                        class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-500 hover:text-white flex items-center justify-center transition shadow-sm" title="Como Chegar">
@@ -124,8 +118,16 @@
                                     </a>
                                 <% } %>
 
-                                <% if (!empresa.whatsapp && !empresa.instagram && !empresa.facebook && !empresa.link_maps) { %>
-                                    <span class="text-xs text-gray-400 italic font-medium">Contatos não informados.</span>
+                                <% if (empresa.site && String(empresa.site).length > 5) { %>
+                                    <a href="<%= empresa.site %>" target="_blank"
+                                       onclick="gtag('event', 'clique_site', { 'nome_empresa': '<%= empresa.nome %>' });"
+                                       class="w-10 h-10 rounded-full bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white flex items-center justify-center transition shadow-sm" title="Site Oficial">
+                                        <i class="fas fa-globe text-lg"></i>
+                                    </a>
+                                <% } %>
+
+                                <% if (!empresa.whatsapp && !empresa.instagram && !empresa.facebook && !empresa.link_maps && !empresa.site) { %>
+                                    <span class="text-xs text-gray-400 italic font-medium mt-2">Nenhum contato direto informado.</span>
                                 <% } %>
                             </div>
                         </div>
