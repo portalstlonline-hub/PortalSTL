@@ -190,7 +190,7 @@
                         <!-- WhatsApp Premium -->
                         <% if(empresa.whatsapp) { %>
                             <a href="https://wa.me/55<%= empresa.whatsapp.replace(/\D/g,'') %>?text=Ol%C3%A1!%20Vi%20o%20seu%20an%C3%BAncio%20no%20Portal%20STL." target="_blank" 
-                               onclick="gtag('event', 'clique_whatsapp', { 'nome_empresa': '<%= empresa.nome %>', 'categoria': '<%= empresa.categoria_nome %>' });"
+                               onclick="gtag('event', 'clique_whatsapp', { 'nome_empresa': '<%= empresa.nome %>', 'categoria': '<%= empresa.categoria_nome %>' }); registrarClique('<%= empresa.slug %>', 'whatsapp');"
                                class="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#1da851] text-white font-black py-4 rounded-2xl transition shadow-lg shadow-green-200 text-lg">
                                 <i class="fab fa-whatsapp text-2xl"></i> WHATSAPP
                             </a>
@@ -199,18 +199,18 @@
                         <!-- Redes Sociais: Insta & Facebook Lado a Lado -->
                         <div class="grid grid-cols-2 gap-3 mt-4">
                             <% if(empresa.instagram) { %>
-                                <!-- Usando a função prepararLink -->
+                                <!-- Usando a função prepararLink e enviando para o BI -->
                                 <a href="<%= prepararLink(empresa.instagram, 'instagram') %>" target="_blank" 
-                                   onclick="gtag('event', 'clique_instagram', { 'nome_empresa': '<%= empresa.nome %>' });"
+                                   onclick="gtag('event', 'clique_instagram', { 'nome_empresa': '<%= empresa.nome %>' }); registrarClique('<%= empresa.slug %>', 'social');"
                                    class="flex items-center justify-center gap-2 w-full bg-slate-50 hover:bg-pink-50 text-slate-700 hover:text-pink-600 font-bold py-3 rounded-xl border border-slate-200 hover:border-pink-200 transition text-sm">
                                     <i class="fab fa-instagram text-lg"></i> Instagram
                                 </a>
                             <% } %>
 
                             <% if(empresa.facebook) { %>
-                                <!-- Usando a função prepararLink -->
+                                <!-- Usando a função prepararLink e enviando para o BI -->
                                 <a href="<%= prepararLink(empresa.facebook, 'facebook') %>" target="_blank" 
-                                   onclick="gtag('event', 'clique_facebook', { 'nome_empresa': '<%= empresa.nome %>' });"
+                                   onclick="gtag('event', 'clique_facebook', { 'nome_empresa': '<%= empresa.nome %>' }); registrarClique('<%= empresa.slug %>', 'social');"
                                    class="flex items-center justify-center gap-2 w-full bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 font-bold py-3 rounded-xl border border-slate-200 hover:border-blue-200 transition text-sm">
                                     <i class="fab fa-facebook text-lg"></i> Facebook
                                 </a>
@@ -219,9 +219,9 @@
 
                         <!-- Site Oficial -->
                         <% if(empresa.site) { %>
-                            <!-- Usando a função prepararLink -->
+                            <!-- Usando a função prepararLink e enviando para o BI -->
                             <a href="<%= prepararLink(empresa.site, 'site') %>" target="_blank" 
-                               onclick="gtag('event', 'clique_site', { 'nome_empresa': '<%= empresa.nome %>' });"
+                               onclick="gtag('event', 'clique_site', { 'nome_empresa': '<%= empresa.nome %>' }); registrarClique('<%= empresa.slug %>', 'social');"
                                class="flex items-center justify-center gap-2 w-full bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-700 font-bold py-3 rounded-xl transition text-sm mt-2">
                                 <i class="fas fa-globe text-lg"></i> Visitar Site Oficial
                             </a>
@@ -245,7 +245,7 @@
 
                     <% if(empresa.link_maps) { %>
                         <a href="<%= empresa.link_maps %>" target="_blank" 
-                           onclick="gtag('event', 'clique_mapa', { 'nome_empresa': '<%= empresa.nome %>' });"
+                           onclick="gtag('event', 'clique_mapa', { 'nome_empresa': '<%= empresa.nome %>' }); registrarClique('<%= empresa.slug %>', 'mapa');"
                            class="w-full bg-white hover:bg-amber-500 text-slate-900 hover:text-white font-black py-3.5 rounded-xl transition flex items-center justify-center gap-2 relative shadow-md">
                             <i class="fas fa-route"></i> Abrir no Google Maps
                         </a>
@@ -260,15 +260,15 @@
                     </h3>
                     <div class="flex gap-3">
                         <!-- WhatsApp -->
-                        <button onclick="compartilharWhatsApp()" class="flex-1 bg-[#25D366] hover:bg-[#1da851] text-white py-3.5 rounded-xl transition shadow-md flex items-center justify-center gap-2" title="Compartilhar no WhatsApp">
+                        <button onclick="compartilharWhatsApp(); registrarClique('<%= empresa.slug %>', 'share');" class="flex-1 bg-[#25D366] hover:bg-[#1da851] text-white py-3.5 rounded-xl transition shadow-md flex items-center justify-center gap-2" title="Compartilhar no WhatsApp">
                             <i class="fab fa-whatsapp text-xl"></i>
                         </button>
                         <!-- Facebook -->
-                        <button onclick="compartilharFacebook()" class="flex-1 bg-[#1877F2] hover:bg-[#166fe5] text-white py-3.5 rounded-xl transition shadow-md flex items-center justify-center gap-2" title="Compartilhar no Facebook">
+                        <button onclick="compartilharFacebook(); registrarClique('<%= empresa.slug %>', 'share');" class="flex-1 bg-[#1877F2] hover:bg-[#166fe5] text-white py-3.5 rounded-xl transition shadow-md flex items-center justify-center gap-2" title="Compartilhar no Facebook">
                             <i class="fab fa-facebook-f text-xl"></i>
                         </button>
                         <!-- Copiar Link -->
-                        <button onclick="copiarLink()" id="btnCopiar" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3.5 rounded-xl transition shadow-sm flex items-center justify-center gap-2" title="Copiar Link">
+                        <button onclick="copiarLink(); registrarClique('<%= empresa.slug %>', 'share');" id="btnCopiar" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3.5 rounded-xl transition shadow-sm flex items-center justify-center gap-2" title="Copiar Link">
                             <i class="fas fa-link text-xl"></i>
                         </button>
                     </div>
@@ -315,7 +315,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DO LIGHTBOX E LGPD -->
+    <!-- SCRIPT DO LIGHTBOX, COMPARTILHAMENTO, LGPD E BI -->
     <script>
         function abrirLightbox(src) {
             document.getElementById('lightbox-img').src = src;
@@ -394,6 +394,12 @@
             btnAceitar.addEventListener('click', () => fecharBanner('aceitou'));
             btnRecusar.addEventListener('click', () => fecharBanner('recusou'));
         });
+
+        // 📡 FUNÇÃO DE BI: ENVIA O CLIQUE PARA O PAINEL ADMIN
+        function registrarClique(slug, tipo) {
+            fetch(`/api/track/${slug}/${tipo}`, { method: 'POST' })
+                .catch(e => console.log('Erro ao rastrear clique no BI:', e));
+        }
     </script>
 
 </body>
