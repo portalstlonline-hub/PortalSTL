@@ -17,7 +17,8 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-// Garantir que a pasta de uploads existe
+
+// Garantir que a pasta de uploads existe (Fallback de segurança)
 const pastaUploads = path.join(__dirname, 'public/uploads');
 if (!fs.existsSync(pastaUploads)) {
     fs.mkdirSync(pastaUploads, { recursive: true });
@@ -160,16 +161,16 @@ app.use('/admin', protegerAdmin);
 // ⚙️ ROTAS DO ADMIN (PAINEL DE CONTROLE)
 // ==========================================
 
-// 🚀 ROTA SECRETA 1: Injeção direta para criar a coluna de acessos sem precisar do phpMyAdmin
+// 🚀 ROTA SECRETA 1.0: Criar a coluna de acessos originais
 app.get('/admin/criar-coluna-acessos', async (req, res) => {
     try {
         await db.promise().execute('ALTER TABLE empresas ADD COLUMN acessos INT DEFAULT 0');
-        res.send('<div style="text-align:center; margin-top:50px; font-family:sans-serif;"><h1>✅ Rota Secreta Executada!</h1><p>A coluna <strong>acessos</strong> foi injetada com sucesso na tabela empresas lá na Hostinger!</p><a href="/admin" style="background:#22c55e; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">Ir para o Painel Admin</a></div>');
+        res.send('<div style="text-align:center; margin-top:50px; font-family:sans-serif;"><h1>✅ Rota Secreta Executada!</h1><p>A coluna <strong>acessos</strong> foi injetada com sucesso!</p><a href="/admin" style="background:#22c55e; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">Ir para o Painel</a></div>');
     } catch (err) {
         if (err.code === 'ER_DUP_FIELDNAME') {
-            return res.send('<div style="text-align:center; margin-top:50px; font-family:sans-serif; color:#eab308;"><h1>⚠️ Coluna já existe!</h1><p>A coluna <strong>acessos</strong> já foi criada anteriormente na base de dados.</p><a href="/admin" style="background:#eab308; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">Ir para o Painel Admin</a></div>');
+            return res.send('<div style="text-align:center; margin-top:50px; font-family:sans-serif; color:#eab308;"><h1>⚠️ Coluna já existe!</h1><a href="/admin" style="background:#eab308; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">Ir para o Painel</a></div>');
         }
-        res.status(500).send(`<h1>❌ Erro na injeção SQL:</h1><p>${err.message}</p>`);
+        res.status(500).send(`<h1>❌ Erro:</h1><p>${err.message}</p>`);
     }
 });
 
@@ -185,7 +186,6 @@ app.get('/admin/upgrade-bi', async (req, res) => {
         res.status(500).send(`<h1>❌ Erro na injeção SQL:</h1><p>${err.message}</p>`);
     }
 });
-
 
 // Dashboard Principal
 app.get('/admin', async (req, res) => {
@@ -213,12 +213,19 @@ app.get('/admin/excluir/:id', async (req, res) => {
 // Excluir Categoria
 app.get('/admin/categorias/excluir/:id', async (req, res) => {
     try {
-        await db.promise().execute('UPDATE empresas SET categoria_id = NULL WHERE categoria_id = ?', [req.params.id]);
+        // 🛡️ BLINDAGEM DO IAGO: Verifica se existem empresas usando esta categoria antes de apagar
+        const [empresasVinculadas] = await db.promise().execute('SELECT id FROM empresas WHERE categoria_id = ?', [req.params.id]);
+        
+        if (empresasVinculadas.length > 0) {
+            return res.send(`<script>alert("⚠️ ALERTA DE SEGURANÇA: Não é possível excluir esta categoria porque existem ${empresasVinculadas.length} empresa(s) a usá-la. Por favor, edite as empresas e mude a categoria delas primeiro!"); window.location.href="/admin";</script>`);
+        }
+
+        // Se estiver vazia, pode apagar tranquilamente
         await db.promise().execute('DELETE FROM categorias WHERE id = ?', [req.params.id]);
         res.redirect('/admin');
     } catch (err) { 
         console.error('🚨 Erro ao excluir categoria:', err);
-        res.status(500).send('<script>alert("Erro ao excluir categoria."); window.location.href="/admin";</script>'); 
+        res.status(500).send(`<script>alert("Erro interno: ${err.message}"); window.location.href="/admin";</script>`); 
     }
 });
 
@@ -258,7 +265,7 @@ app.get('/admin/nova', async (req, res) => {
     }
 });
 
-// Processar Nova Empresa (Salvando URLs do Cloudinary)
+// Processar Nova Empresa
 app.post('/admin/nova', uploadConfig, async (req, res) => {
     try {
         const { nome, categoria_id, descricao, endereco, link_maps, whatsapp, site, facebook, instagram, plano_id, status, video_url } = req.body;
@@ -299,7 +306,6 @@ app.get('/admin/editar/:id', async (req, res) => {
 app.post('/admin/atualizar/:id', uploadConfig, async (req, res) => {
     try {
         const { nome, categoria_id, descricao, endereco, link_maps, whatsapp, site, facebook, instagram, plano_id, status, video_url } = req.body;
-        // Atualiza o slug caso o nome mude
         const slug = gerarSlug(nome);
         
         let query = 'UPDATE empresas SET categoria_id=?, nome=?, slug=?, descricao=?, endereco=?, link_maps=?, whatsapp=?, site=?, facebook=?, instagram=?, plano_id=?, status=?, video_url=?';
@@ -369,7 +375,6 @@ app.post('/admin/importar-google', async (req, res) => {
             const [existe] = await db.promise().execute('SELECT id FROM empresas WHERE slug = ?', [slug]);
 
             if (existe.length === 0) {
-                // Salva como rascunho interno inicial (status 'inativo')
                 const query = `INSERT INTO empresas (categoria_id, plano_id, nome, slug, endereco, whatsapp, status) VALUES (?, 1, ?, ?, ?, ?, 'inativo')`;
                 await db.promise().execute(query, [categoria_id, nome, slug, endereco || null, telefone || null]);
                 inseridos++;
@@ -415,7 +420,7 @@ app.post('/api/track/:slug/:tipo', async (req, res) => {
 // ==========================================
 app.get('/:slug', async (req, res) => {
     try {
-        // 📊 REGISTO DE ACESSO: Incrementa o contador de visualizações na base de dados automaticamente
+        // 📊 REGISTO DE ACESSO À VITRINE
         await db.promise().execute('UPDATE empresas SET acessos = acessos + 1 WHERE slug = ? AND status = "ativo"', [req.params.slug]);
 
         const query = `
@@ -439,6 +444,6 @@ app.listen(port, () => {
     console.log(`\n=========================================`);
     console.log(`🚀 Motor Central STL online na porta ${port}`);
     console.log(`☁️ Cloudinary Ativado e Blindado com a Chave Mestra!`);
-    console.log(`📊 Radar de Acessos Nativo Ativado nas Páginas!`);
+    console.log(`📊 Radar de Acessos e BI Nativo Ativados!`);
     console.log(`=========================================\n`);
 });
