@@ -162,7 +162,7 @@
                 <div class="p-4 bg-white border-b border-gray-200 flex flex-col md:flex-row gap-4 items-center">
                     <div class="flex-1 w-full relative">
                         <i class="fas fa-search absolute left-3 top-2.5 text-gray-400 text-sm"></i>
-                        <input type="text" id="pesquisaEmpresa" placeholder="Buscar cliente..." class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none">
+                        <input type="text" id="pesquisaEmpresa" placeholder="Buscar cliente, categoria ou palavra-chave..." class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none">
                     </div>
                     <div class="w-full md:w-64">
                         <select id="filtroCategoria" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 outline-none bg-white">
@@ -188,8 +188,12 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200" id="tabelaEmpresas">
                             <% if(empresas && empresas.length > 0) { %>
-                                <% empresas.forEach(empresa => { %>
-                                <tr class="hover:bg-gray-50 transition duration-150 linha-empresa">
+                                <% empresas.forEach(empresa => { 
+                                    // Pega as palavras-chave da categoria desta empresa para embedar no HTML
+                                    let catObj = categoriasLista.find(c => c.id === empresa.categoria_id);
+                                    let chavesSEO = catObj ? (catObj.palavras_chave || '') : '';
+                                %>
+                                <tr class="hover:bg-gray-50 transition duration-150 linha-empresa" data-keywords="<%= chavesSEO %>">
                                     <td class="px-4 py-3 overflow-hidden">
                                         <div class="text-sm font-bold text-gray-900 truncate nome-empresa"><%= empresa.nome %></div>
                                         <div class="text-xs text-gray-500 truncate">Plano: <%= empresa.plano_id == 3 ? 'Patrocinado' : (empresa.plano_id == 2 ? 'Premium' : 'Básico') %></div>
@@ -281,7 +285,7 @@
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <i class="fas fa-search text-gray-400"></i>
                                 </div>
-                                <input type="text" id="buscaRelatorio" class="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-amber-500 focus:border-amber-500 text-sm outline-none transition" placeholder="Digite o nome da empresa..." autocomplete="off">
+                                <input type="text" id="buscaRelatorio" class="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-amber-500 focus:border-amber-500 text-sm outline-none transition" placeholder="Digite o nome, categoria ou termo SEO..." autocomplete="off">
                                 
                                 <!-- Dropdown Customizado (Lista de Resultados) -->
                                 <div id="listaRelatorio" class="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto hidden">
@@ -424,26 +428,31 @@
     <!-- Transferência dos dados do Node.js para o Javascript do Navegador -->
     <script>
         const bdEmpresas = <%- JSON.stringify(empresas || []) %>;
+        // Nova Transferência Iago: Exportando as Categorias para o JavaScript poder ler o SEO oculto
+        const bdCategorias = <%- JSON.stringify(categoriasLista || []) %>;
     </script>
 
     <!-- 🛠️ SCRIPTS GERAIS DO PAINEL -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             
-            // --- LÓGICA DO FILTRO DA TABELA PRINCIPAL ---
+            // --- LÓGICA DO FILTRO DA TABELA PRINCIPAL (UPGRADE ONISCIENTE) ---
             const inputPesquisa = document.getElementById('pesquisaEmpresa');
             const selectCategoria = document.getElementById('filtroCategoria');
             const linhasEmpresa = document.querySelectorAll('.linha-empresa');
 
             function filtrarTabela() {
-                const termoTexto = inputPesquisa.value.toLowerCase();
+                const termoTexto = inputPesquisa.value.toLowerCase().trim();
                 const termoCategoria = selectCategoria.value.toLowerCase();
 
                 linhasEmpresa.forEach(linha => {
                     const nome = linha.querySelector('.nome-empresa').textContent.toLowerCase();
                     const categoria = linha.querySelector('.cat-empresa').textContent.toLowerCase().trim();
+                    // O segredo do Iago: lendo as palavras-chave ocultas no HTML
+                    const keywords = linha.getAttribute('data-keywords').toLowerCase();
 
-                    const matchTexto = nome.includes(termoTexto);
+                    // Procura o texto digitado no Nome, na Categoria ou nas Palavras-Chave!
+                    const matchTexto = nome.includes(termoTexto) || categoria.includes(termoTexto) || keywords.includes(termoTexto);
                     const matchCategoria = termoCategoria === "" || categoria === termoCategoria;
 
                     if (matchTexto && matchCategoria) {
@@ -459,7 +468,7 @@
                 selectCategoria.addEventListener('change', filtrarTabela);
             }
 
-            // --- LÓGICA DO BUSCADOR DE RELATÓRIO (CUSTOM DROPDOWN) ---
+            // --- LÓGICA DO BUSCADOR DE RELATÓRIO (CUSTOM DROPDOWN - ONISCIENTE) ---
             const inputBuscaRelatorio = document.getElementById('buscaRelatorio');
             const listaRelatorio = document.getElementById('listaRelatorio');
 
@@ -473,11 +482,20 @@
                         return;
                     }
 
-                    // Filtra as empresas pelo termo
-                    const filtrados = bdEmpresas.filter(emp => emp.nome.toLowerCase().includes(termo));
+                    // Filtra as empresas pelo termo cruzando com SEO
+                    const filtrados = bdEmpresas.filter(emp => {
+                        const nomeMatch = emp.nome.toLowerCase().includes(termo);
+                        const catMatch = emp.categoria_nome ? emp.categoria_nome.toLowerCase().includes(termo) : false;
+                        
+                        // Busca a categoria da empresa e analisa as palavras-chave dela
+                        const catObj = bdCategorias.find(c => c.id === emp.categoria_id);
+                        const keywordsMatch = (catObj && catObj.palavras_chave) ? catObj.palavras_chave.toLowerCase().includes(termo) : false;
+                        
+                        return nomeMatch || catMatch || keywordsMatch;
+                    });
 
                     if (filtrados.length === 0) {
-                        listaRelatorio.innerHTML = '<div class="p-4 text-sm text-gray-500 text-center font-medium">Nenhuma empresa encontrada com esse nome.</div>';
+                        listaRelatorio.innerHTML = '<div class="p-4 text-sm text-gray-500 text-center font-medium">Nenhum resultado encontrado.</div>';
                     } else {
                         filtrados.forEach(emp => {
                             const div = document.createElement('div');
