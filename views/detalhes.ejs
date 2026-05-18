@@ -164,6 +164,28 @@
                         <i class="far fa-address-card text-amber-500"></i> Contatos
                     </h3>
                     
+                    <% 
+                        // 🚨 LÓGICA DE BLINDAGEM DE LINKS DO IAGO 🚨
+                        // Formata a URL magicamente, independente de como o cliente digitou no cadastro
+                        function prepararLink(url, plataforma) {
+                            if (!url) return '#';
+                            let limpo = url.trim();
+                            // Se já tem http ou https, devolve direto
+                            if (/^https?:\/\//i.test(limpo)) return limpo;
+                            
+                            if (plataforma === 'instagram') {
+                                if (limpo.toLowerCase().includes('instagram.com')) return 'https://' + limpo;
+                                return 'https://instagram.com/' + limpo.replace('@', '');
+                            }
+                            if (plataforma === 'facebook') {
+                                if (limpo.toLowerCase().includes('facebook.com')) return 'https://' + limpo;
+                                return 'https://www.facebook.com/' + limpo;
+                            }
+                            // Site genérico
+                            return 'https://' + limpo;
+                        }
+                    %>
+
                     <div class="space-y-4">
                         <!-- WhatsApp Premium -->
                         <% if(empresa.whatsapp) { %>
@@ -177,7 +199,8 @@
                         <!-- Redes Sociais: Insta & Facebook Lado a Lado -->
                         <div class="grid grid-cols-2 gap-3 mt-4">
                             <% if(empresa.instagram) { %>
-                                <a href="https://instagram.com/<%= empresa.instagram.replace('@','') %>" target="_blank" 
+                                <!-- Usando a função prepararLink -->
+                                <a href="<%= prepararLink(empresa.instagram, 'instagram') %>" target="_blank" 
                                    onclick="gtag('event', 'clique_instagram', { 'nome_empresa': '<%= empresa.nome %>' });"
                                    class="flex items-center justify-center gap-2 w-full bg-slate-50 hover:bg-pink-50 text-slate-700 hover:text-pink-600 font-bold py-3 rounded-xl border border-slate-200 hover:border-pink-200 transition text-sm">
                                     <i class="fab fa-instagram text-lg"></i> Instagram
@@ -185,7 +208,8 @@
                             <% } %>
 
                             <% if(empresa.facebook) { %>
-                                <a href="<%= empresa.facebook.startsWith('http') ? empresa.facebook : 'https://' + empresa.facebook %>" target="_blank" 
+                                <!-- Usando a função prepararLink -->
+                                <a href="<%= prepararLink(empresa.facebook, 'facebook') %>" target="_blank" 
                                    onclick="gtag('event', 'clique_facebook', { 'nome_empresa': '<%= empresa.nome %>' });"
                                    class="flex items-center justify-center gap-2 w-full bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 font-bold py-3 rounded-xl border border-slate-200 hover:border-blue-200 transition text-sm">
                                     <i class="fab fa-facebook text-lg"></i> Facebook
@@ -195,7 +219,8 @@
 
                         <!-- Site Oficial -->
                         <% if(empresa.site) { %>
-                            <a href="<%= empresa.site.startsWith('http') ? empresa.site : 'https://' + empresa.site %>" target="_blank" 
+                            <!-- Usando a função prepararLink -->
+                            <a href="<%= prepararLink(empresa.site, 'site') %>" target="_blank" 
                                onclick="gtag('event', 'clique_site', { 'nome_empresa': '<%= empresa.nome %>' });"
                                class="flex items-center justify-center gap-2 w-full bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-700 font-bold py-3 rounded-xl transition text-sm mt-2">
                                 <i class="fas fa-globe text-lg"></i> Visitar Site Oficial
@@ -290,7 +315,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DO LIGHTBOX, COMPARTILHAMENTO E LGPD -->
+    <!-- SCRIPT DO LIGHTBOX E LGPD -->
     <script>
         function abrirLightbox(src) {
             document.getElementById('lightbox-img').src = src;
