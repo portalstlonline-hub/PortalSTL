@@ -160,20 +160,32 @@ app.use('/admin', protegerAdmin);
 // ⚙️ ROTAS DO ADMIN (PAINEL DE CONTROLE)
 // ==========================================
 
-// 🚀 ROTA SECRETA: Injeção direta para criar a coluna de acessos sem precisar do phpMyAdmin
+// 🚀 ROTA SECRETA 1: Injeção direta para criar a coluna de acessos sem precisar do phpMyAdmin
 app.get('/admin/criar-coluna-acessos', async (req, res) => {
     try {
         await db.promise().execute('ALTER TABLE empresas ADD COLUMN acessos INT DEFAULT 0');
         res.send('<div style="text-align:center; margin-top:50px; font-family:sans-serif;"><h1>✅ Rota Secreta Executada!</h1><p>A coluna <strong>acessos</strong> foi injetada com sucesso na tabela empresas lá na Hostinger!</p><a href="/admin" style="background:#22c55e; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">Ir para o Painel Admin</a></div>');
     } catch (err) {
-        console.error('🚨 Erro na rota secreta:', err);
-        // Se o erro disser que a coluna já existe, ele avisa de forma amigável
         if (err.code === 'ER_DUP_FIELDNAME') {
             return res.send('<div style="text-align:center; margin-top:50px; font-family:sans-serif; color:#eab308;"><h1>⚠️ Coluna já existe!</h1><p>A coluna <strong>acessos</strong> já foi criada anteriormente na base de dados.</p><a href="/admin" style="background:#eab308; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">Ir para o Painel Admin</a></div>');
         }
         res.status(500).send(`<h1>❌ Erro na injeção SQL:</h1><p>${err.message}</p>`);
     }
 });
+
+// 🚀 ROTA SECRETA 2.0: Criar as colunas de BI (Cliques Reais)
+app.get('/admin/upgrade-bi', async (req, res) => {
+    try {
+        await db.promise().execute('ALTER TABLE empresas ADD COLUMN cliques_whatsapp INT DEFAULT 0, ADD COLUMN cliques_mapa INT DEFAULT 0, ADD COLUMN cliques_social INT DEFAULT 0, ADD COLUMN compartilhamentos INT DEFAULT 0');
+        res.send('<div style="text-align:center; margin-top:50px; font-family:sans-serif;"><h1>✅ BI Atualizado! O X-9 está no ar!</h1><p>Colunas de cliques injetadas no banco de dados.</p><a href="/admin" style="background:#22c55e; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">Ir para o Painel</a></div>');
+    } catch (err) {
+        if (err.code === 'ER_DUP_FIELDNAME') {
+            return res.send('<div style="text-align:center; margin-top:50px; font-family:sans-serif; color:#eab308;"><h1>⚠️ As colunas já existem!</h1><p>O seu banco de dados já está pronto para o BI.</p><a href="/admin" style="background:#eab308; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">Ir para o Painel</a></div>');
+        }
+        res.status(500).send(`<h1>❌ Erro na injeção SQL:</h1><p>${err.message}</p>`);
+    }
+});
+
 
 // Dashboard Principal
 app.get('/admin', async (req, res) => {
@@ -370,6 +382,31 @@ app.post('/admin/importar-google', async (req, res) => {
     } catch (err) {
         console.error('🚨 Erro na API do Google:', err);
         res.status(500).send(`<script>alert("Erro na varredura: ${err.message}"); window.location.href="/admin";</script>`);
+    }
+});
+
+// ==========================================
+// 📡 ANTENA DE CLIQUES (API de Rastreio BI)
+// ==========================================
+app.post('/api/track/:slug/:tipo', async (req, res) => {
+    try {
+        const { slug, tipo } = req.params;
+        let coluna = '';
+        
+        // Identifica qual botão foi clicado
+        if (tipo === 'whatsapp') coluna = 'cliques_whatsapp';
+        else if (tipo === 'mapa') coluna = 'cliques_mapa';
+        else if (tipo === 'social') coluna = 'cliques_social'; // Cobre Instagram, FB e Site
+        else if (tipo === 'share') coluna = 'compartilhamentos'; // Cobre botões de partilha
+        
+        // Se a coluna for válida, injeta +1 na base de dados
+        if (coluna) {
+            await db.promise().execute(`UPDATE empresas SET ${coluna} = ${coluna} + 1 WHERE slug = ?`, [slug]);
+        }
+        res.sendStatus(200);
+    } catch (e) { 
+        console.error('🚨 Erro ao rastrear clique:', e);
+        res.sendStatus(500); 
     }
 });
 
