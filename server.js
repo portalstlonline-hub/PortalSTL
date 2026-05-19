@@ -17,14 +17,13 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-// Garantir que a pasta de uploads existe
+
 const pastaUploads = path.join(__dirname, 'public/uploads');
 if (!fs.existsSync(pastaUploads)) {
     fs.mkdirSync(pastaUploads, { recursive: true });
 }
 
-// 🔐 CONFIGURAÇÃO DO CLOUDINARY (A BALA DE PRATA)
-// O sistema lê automaticamente a chave mestra (CLOUDINARY_URL) do cofre do Render
+// 🔐 CONFIGURAÇÃO DO CLOUDINARY
 cloudinary.config({
     secure: true
 });
@@ -39,14 +38,12 @@ const storage = new CloudinaryStorage({
     }
 });
 
-// 📸 UPGRADE: Limites de Galeria (1 Capa + 6 Galeria)
 const upload = multer({ storage: storage });
 const uploadConfig = upload.fields([
     { name: 'foto', maxCount: 1 }, 
     { name: 'galeria', maxCount: 6 } 
 ]);
 
-// Ligação à Base de Dados
 const db = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -56,7 +53,6 @@ const db = mysql.createPool({
     connectionLimit: 10
 });
 
-// Criar URLs Amigáveis (Slugs)
 const gerarSlug = (texto) => {
     return (texto || '').toLowerCase()
         .normalize("NFD")
@@ -66,10 +62,18 @@ const gerarSlug = (texto) => {
 };
 
 // ==========================================
+// 🛡️ ESCUDO VIP PARA FACEBOOK E WHATSAPP
+// Resolve o Erro 403 de prévias bloqueadas!
+// ==========================================
+app.get('/robots.txt', (req, res) => {
+    res.type('text/plain');
+    res.send("User-agent: *\nAllow: /\n\nUser-agent: facebookexternalhit\nAllow: /\n\nUser-agent: WhatsApp\nAllow: /");
+});
+
+// ==========================================
 // 🌍 ROTAS PÚBLICAS
 // ==========================================
 
-// Página Inicial
 app.get('/', async (req, res) => {
     try {
         const [categorias] = await db.promise().execute('SELECT * FROM categorias ORDER BY nome ASC');
@@ -82,12 +86,10 @@ app.get('/', async (req, res) => {
     }
 });
 
-// Receção de Cadastro Direto do Formulário (Página Inicial)
 app.post('/contato', async (req, res) => {
     try {
         const { nome, categoria_id, whatsapp, endereco, link_maps, site, facebook, instagram } = req.body;
         const slug = gerarSlug(nome);
-        // Entra automaticamente como 'aprovacao' (laranja piscante no painel)
         const query = `INSERT INTO empresas (categoria_id, plano_id, nome, slug, endereco, link_maps, whatsapp, site, facebook, instagram, status) VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, 'aprovacao')`;
         await db.promise().execute(query, [categoria_id, nome, slug, endereco || null, link_maps || null, whatsapp || null, site || null, facebook || null, instagram || null]);
         res.redirect('/?sucesso=true#anunciar');
@@ -97,7 +99,6 @@ app.post('/contato', async (req, res) => {
     }
 });
 
-// Página Explorar / Filtros e Buscas
 app.get('/explorar', async (req, res) => {
     try {
         const categoriaFiltro = req.query.categoria; 
@@ -112,11 +113,8 @@ app.get('/explorar', async (req, res) => {
         
         if (buscaTexto) { 
             let termoLimpo = buscaTexto.trim();
-            // Tira o "s" do final para buscar no singular (ex: cachoeiras -> cachoeira)
             if (termoLimpo.toLowerCase().endsWith('s') && termoLimpo.length > 3) termoLimpo = termoLimpo.slice(0, -1);
             const termo = `%${termoLimpo}%`;
-            
-            // 🎯 UPGRADE: Busca cirúrgica! Lendo apenas Nome, Categoria e Palavras-Chave (Ignorando a descrição)
             queryEmpresas += ' AND (e.nome LIKE ? OR c.nome LIKE ? OR c.palavras_chave LIKE ?)'; 
             params.push(termo, termo, termo); 
         }
@@ -159,15 +157,12 @@ app.use('/admin', protegerAdmin);
 // ==========================================
 // ⚙️ ROTAS DO ADMIN (PAINEL DE CONTROLE)
 // ==========================================
-
-// 🚀 ROTA SECRETA: Injeção direta para criar a coluna de acessos sem precisar do phpMyAdmin
 app.get('/admin/criar-coluna-acessos', async (req, res) => {
     try {
         await db.promise().execute('ALTER TABLE empresas ADD COLUMN acessos INT DEFAULT 0');
         res.send('<div style="text-align:center; margin-top:50px; font-family:sans-serif;"><h1>✅ Rota Secreta Executada!</h1><p>A coluna <strong>acessos</strong> foi injetada com sucesso na tabela empresas lá na Hostinger!</p><a href="/admin" style="background:#22c55e; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">Ir para o Painel Admin</a></div>');
     } catch (err) {
         console.error('🚨 Erro na rota secreta:', err);
-        // Se o erro disser que a coluna já existe, ele avisa de forma amigável
         if (err.code === 'ER_DUP_FIELDNAME') {
             return res.send('<div style="text-align:center; margin-top:50px; font-family:sans-serif; color:#eab308;"><h1>⚠️ Coluna já existe!</h1><p>A coluna <strong>acessos</strong> já foi criada anteriormente na base de dados.</p><a href="/admin" style="background:#eab308; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">Ir para o Painel Admin</a></div>');
         }
@@ -175,7 +170,18 @@ app.get('/admin/criar-coluna-acessos', async (req, res) => {
     }
 });
 
-// Dashboard Principal
+app.get('/admin/upgrade-bi', async (req, res) => {
+    try {
+        await db.promise().execute('ALTER TABLE empresas ADD COLUMN cliques_whatsapp INT DEFAULT 0, ADD COLUMN cliques_mapa INT DEFAULT 0, ADD COLUMN cliques_social INT DEFAULT 0, ADD COLUMN compartilhamentos INT DEFAULT 0');
+        res.send('<div style="text-align:center; margin-top:50px; font-family:sans-serif;"><h1>✅ BI Atualizado! O X-9 está no ar!</h1><p>Colunas de cliques injetadas no banco de dados.</p><a href="/admin" style="background:#22c55e; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">Ir para o Painel</a></div>');
+    } catch (err) {
+        if (err.code === 'ER_DUP_FIELDNAME') {
+            return res.send('<div style="text-align:center; margin-top:50px; font-family:sans-serif; color:#eab308;"><h1>⚠️ As colunas já existem!</h1><p>O seu banco de dados já está pronto para o BI.</p><a href="/admin" style="background:#eab308; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">Ir para o Painel</a></div>');
+        }
+        res.status(500).send(`<h1>❌ Erro na injeção SQL:</h1><p>${err.message}</p>`);
+    }
+});
+
 app.get('/admin', async (req, res) => {
     try {
         const [empresas] = await db.promise().execute(`SELECT empresas.*, categorias.nome as categoria_nome FROM empresas LEFT JOIN categorias ON empresas.categoria_id = categorias.id ORDER BY empresas.id DESC`);
@@ -187,7 +193,6 @@ app.get('/admin', async (req, res) => {
     }
 });
 
-// Excluir Empresa
 app.get('/admin/excluir/:id', async (req, res) => {
     try {
         await db.promise().execute('DELETE FROM empresas WHERE id = ?', [req.params.id]);
@@ -198,19 +203,20 @@ app.get('/admin/excluir/:id', async (req, res) => {
     }
 });
 
-// Excluir Categoria
 app.get('/admin/categorias/excluir/:id', async (req, res) => {
     try {
-        await db.promise().execute('UPDATE empresas SET categoria_id = NULL WHERE categoria_id = ?', [req.params.id]);
+        const [empresasVinculadas] = await db.promise().execute('SELECT id FROM empresas WHERE categoria_id = ?', [req.params.id]);
+        if (empresasVinculadas.length > 0) {
+            return res.send(`<script>alert("⚠️ ALERTA DE SEGURANÇA: Não é possível excluir esta categoria porque existem ${empresasVinculadas.length} empresa(s) a usá-la. Por favor, edite as empresas e mude a categoria delas primeiro!"); window.location.href="/admin";</script>`);
+        }
         await db.promise().execute('DELETE FROM categorias WHERE id = ?', [req.params.id]);
         res.redirect('/admin');
     } catch (err) { 
         console.error('🚨 Erro ao excluir categoria:', err);
-        res.status(500).send('<script>alert("Erro ao excluir categoria."); window.location.href="/admin";</script>'); 
+        res.status(500).send(`<script>alert("Erro interno: ${err.message}"); window.location.href="/admin";</script>`); 
     }
 });
 
-// Atualizar Categoria (SEO)
 app.post('/admin/categorias/atualizar/:id', async (req, res) => {
     try {
         const { nome, palavras_chave } = req.body;
@@ -222,7 +228,6 @@ app.post('/admin/categorias/atualizar/:id', async (req, res) => {
     }
 });
 
-// Criar Nova Categoria
 app.post('/admin/categorias', async (req, res) => {
     try {
         const { nome_categoria } = req.body;
@@ -235,7 +240,6 @@ app.post('/admin/categorias', async (req, res) => {
     }
 });
 
-// Formulário de Nova Empresa
 app.get('/admin/nova', async (req, res) => {
     try {
         const [categorias] = await db.promise().execute('SELECT * FROM categorias ORDER BY nome ASC');
@@ -246,21 +250,17 @@ app.get('/admin/nova', async (req, res) => {
     }
 });
 
-// Processar Nova Empresa (Salvando URLs do Cloudinary)
 app.post('/admin/nova', uploadConfig, async (req, res) => {
     try {
         const { nome, categoria_id, descricao, endereco, link_maps, whatsapp, site, facebook, instagram, plano_id, status, video_url } = req.body;
         const slug = gerarSlug(nome);
-        
         let imagemUrl = null;
         if (req.files && req.files['foto']) imagemUrl = req.files['foto'][0].path;
-        
         let galeriaJson = null;
         if (req.files && req.files['galeria']) galeriaJson = JSON.stringify(req.files['galeria'].map(f => f.path));
         
         const query = `INSERT INTO empresas (categoria_id, plano_id, nome, slug, descricao, endereco, link_maps, whatsapp, site, facebook, instagram, imagem, video_url, galeria, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         await db.promise().execute(query, [categoria_id, plano_id, nome, slug, descricao || null, endereco || null, link_maps || null, whatsapp || null, site || null, facebook || null, instagram || null, imagemUrl, video_url || null, galeriaJson, status]);
-        
         res.redirect('/admin');
     } catch (err) { 
         console.error('🚨 Erro ao guardar nova empresa:', err);
@@ -268,14 +268,11 @@ app.post('/admin/nova', uploadConfig, async (req, res) => {
     }
 });
 
-// Formulário de Editar Empresa
 app.get('/admin/editar/:id', async (req, res) => {
     try {
         const [empresa] = await db.promise().execute('SELECT * FROM empresas WHERE id = ?', [req.params.id]);
         const [categorias] = await db.promise().execute('SELECT * FROM categorias ORDER BY nome ASC');
-        
         if(empresa.length === 0) return res.status(404).send('Empresa não encontrada.');
-        
         res.render('editar', { empresa: empresa[0], categorias });
     } catch (err) { 
         console.error('🚨 Erro ao carregar edição:', err);
@@ -283,13 +280,10 @@ app.get('/admin/editar/:id', async (req, res) => {
     }
 });
 
-// Processar Edição de Empresa
 app.post('/admin/atualizar/:id', uploadConfig, async (req, res) => {
     try {
         const { nome, categoria_id, descricao, endereco, link_maps, whatsapp, site, facebook, instagram, plano_id, status, video_url } = req.body;
-        // Atualiza o slug caso o nome mude
         const slug = gerarSlug(nome);
-        
         let query = 'UPDATE empresas SET categoria_id=?, nome=?, slug=?, descricao=?, endereco=?, link_maps=?, whatsapp=?, site=?, facebook=?, instagram=?, plano_id=?, status=?, video_url=?';
         let params = [categoria_id, nome, slug, descricao || null, endereco || null, link_maps || null, whatsapp || null, site || null, facebook || null, instagram || null, plano_id, status, video_url || null];
         
@@ -297,12 +291,10 @@ app.post('/admin/atualizar/:id', uploadConfig, async (req, res) => {
             query += ', imagem=?'; 
             params.push(req.files['foto'][0].path); 
         }
-        
         if (req.files && req.files['galeria'] && req.files['galeria'].length > 0) { 
             query += ', galeria=?'; 
             params.push(JSON.stringify(req.files['galeria'].map(f => f.path))); 
         }
-        
         query += ' WHERE id=?';
         params.push(req.params.id);
         
@@ -314,9 +306,6 @@ app.post('/admin/atualizar/:id', uploadConfig, async (req, res) => {
     }
 });
 
-// ==========================================
-// 🤖 AUTOMAÇÃO: VARREDURA DO GOOGLE PLACES
-// ==========================================
 app.post('/admin/importar-google', async (req, res) => {
     const { termo_busca, categoria_id } = req.body;
     const apiKey = process.env.GOOGLE_PLACES_API_KEY;
@@ -353,11 +342,9 @@ app.post('/admin/importar-google', async (req, res) => {
             const endereco = place.formattedAddress;
             const telefone = place.nationalPhoneNumber ? place.nationalPhoneNumber.replace(/\D/g, '') : null;
             const slug = gerarSlug(nome);
-
             const [existe] = await db.promise().execute('SELECT id FROM empresas WHERE slug = ?', [slug]);
 
             if (existe.length === 0) {
-                // Salva como rascunho interno inicial (status 'inativo')
                 const query = `INSERT INTO empresas (categoria_id, plano_id, nome, slug, endereco, whatsapp, status) VALUES (?, 1, ?, ?, ?, ?, 'inativo')`;
                 await db.promise().execute(query, [categoria_id, nome, slug, endereco || null, telefone || null]);
                 inseridos++;
@@ -365,11 +352,29 @@ app.post('/admin/importar-google', async (req, res) => {
                 duplicados++;
             }
         }
-
         res.send(`<script>alert("Varredura Concluída!\\n\\n✅ Adicionados: ${inseridos}\\n⚠️ Já existiam: ${duplicados}"); window.location.href="/admin";</script>`);
     } catch (err) {
         console.error('🚨 Erro na API do Google:', err);
         res.status(500).send(`<script>alert("Erro na varredura: ${err.message}"); window.location.href="/admin";</script>`);
+    }
+});
+
+app.post('/api/track/:slug/:tipo', async (req, res) => {
+    try {
+        const { slug, tipo } = req.params;
+        let coluna = '';
+        if (tipo === 'whatsapp') coluna = 'cliques_whatsapp';
+        else if (tipo === 'mapa') coluna = 'cliques_mapa';
+        else if (tipo === 'social') coluna = 'cliques_social'; 
+        else if (tipo === 'share') coluna = 'compartilhamentos'; 
+        
+        if (coluna) {
+            await db.promise().execute(`UPDATE empresas SET ${coluna} = ${coluna} + 1 WHERE slug = ?`, [slug]);
+        }
+        res.sendStatus(200);
+    } catch (e) { 
+        console.error('🚨 Erro ao rastrear clique:', e);
+        res.sendStatus(500); 
     }
 });
 
@@ -378,7 +383,6 @@ app.post('/admin/importar-google', async (req, res) => {
 // ==========================================
 app.get('/:slug', async (req, res) => {
     try {
-        // 📊 REGISTO DE ACESSO: Incrementa o contador de visualizações na base de dados automaticamente
         await db.promise().execute('UPDATE empresas SET acessos = acessos + 1 WHERE slug = ? AND status = "ativo"', [req.params.slug]);
 
         const query = `
@@ -397,11 +401,10 @@ app.get('/:slug', async (req, res) => {
     }
 });
 
-// Inicialização do Servidor
 app.listen(port, () => {
     console.log(`\n=========================================`);
     console.log(`🚀 Motor Central STL online na porta ${port}`);
     console.log(`☁️ Cloudinary Ativado e Blindado com a Chave Mestra!`);
-    console.log(`📊 Radar de Acessos Nativo Ativado nas Páginas!`);
+    console.log(`🛡️ Escudo Robots.txt VIP Ativado!`);
     console.log(`=========================================\n`);
 });
