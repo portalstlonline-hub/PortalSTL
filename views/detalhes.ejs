@@ -12,14 +12,25 @@
             ogImage = empresa.imagem.startsWith('http') ? empresa.imagem : 'https://portalsaothomedasletras.com.br' + empresa.imagem;
         }
         
-        // Determina o tipo do arquivo de forma inteligente para o WhatsApp não rejeitar
-        let ogType = 'image/jpeg';
-        if (ogImage.toLowerCase().endsWith('.png')) ogType = 'image/png';
-        if (ogImage.toLowerCase().endsWith('.webp')) ogType = 'image/webp';
+        // 1. Força HTTPS para o Facebook não rejeitar links inseguros
+        ogImage = ogImage.replace('http://', 'https://');
         
-        // Limpa a descrição para não quebrar o HTML
-        let cleanDesc = empresa.descricao ? empresa.descricao.substring(0, 160).replace(/"/g, '&quot;').replace(/\n/g, ' ') : 'Descubra tudo sobre este local em São Thomé das Letras.';
+        // 2. Codifica a URL (remove espaços ou caracteres estranhos que quebram o robô do WhatsApp)
+        ogImage = encodeURI(ogImage);
+        
+        // 3. Determina o tipo do arquivo de forma inteligente (verificando extensões ocultas)
+        let ogType = 'image/jpeg';
+        if (ogImage.toLowerCase().includes('.png')) ogType = 'image/png';
+        if (ogImage.toLowerCase().includes('.webp')) ogType = 'image/webp';
+        
+        // 4. Limpa a descrição totalmente para não quebrar as tags HTML
+        let cleanDesc = empresa.descricao ? empresa.descricao.substring(0, 160).replace(/"/g, '&quot;').replace(/\n/g, ' ').trim() : 'Descubra tudo sobre este local em São Thomé das Letras.';
     %>
+    
+    <!-- Autorização Expressa para Robôs (Evita bloqueios 403) -->
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    
+    <!-- Meta Tags do Facebook/WhatsApp -->
     <meta property="og:title" content="<%= empresa.nome %> | Portal STL">
     <meta property="og:description" content="<%= cleanDesc %>">
     <meta property="og:url" content="https://portalsaothomedasletras.com.br/<%= empresa.slug %>">
@@ -28,7 +39,14 @@
     <meta property="og:image:type" content="<%= ogType %>">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Capa de <%= empresa.nome %>">
     <meta property="og:type" content="website">
+
+    <!-- Meta Tags do Twitter (Plano B do WhatsApp Moderno) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<%= empresa.nome %> | Portal STL">
+    <meta name="twitter:description" content="<%= cleanDesc %>">
+    <meta name="twitter:image" content="<%= ogImage %>">
 
     <!-- SEO DINÂMICO -->
     <title><%= empresa.nome %> - Portal São Thomé das Letras</title>
