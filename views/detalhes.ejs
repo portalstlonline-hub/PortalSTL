@@ -4,58 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- 🚨 SECÇÃO ULTRA-PRIORITÁRIA: OPEN GRAPH NO TOPO 🚨 -->
     <% 
         let ogImage = 'https://portalsaothomedasletras.com.br/uploads/capa-compartilhamento.png';
         if (empresa.imagem) {
-            // Se já vier do Cloudinary (com http), usa direto. Se for local, coloca o domínio.
-            ogImage = empresa.imagem.startsWith('http') ? empresa.imagem : 'https://portalsaothomedasletras.com.br' + empresa.imagem;
+            ogImage = empresa.imagem;
+            if (!ogImage.startsWith('http')) {
+                ogImage = 'https://portalsaothomedasletras.com.br' + ogImage;
+            }
+            // Força a imagem a ser segura e formatada perfeitamente para o Facebook
+            if (ogImage.includes('cloudinary.com') && ogImage.includes('/upload/')) {
+                if(!ogImage.includes('w_1200')) {
+                    ogImage = ogImage.replace('/upload/', '/upload/w_1200,h_630,c_fill,f_jpg,q_80/');
+                }
+            }
         }
-        
-        // 1. Força HTTPS para o Facebook não rejeitar links inseguros
         ogImage = ogImage.replace('http://', 'https://');
         
-        // 2. Codifica a URL (remove espaços ou caracteres estranhos que quebram o robô do WhatsApp)
-        ogImage = encodeURI(ogImage);
-        
-        // 3. Determina o tipo do arquivo de forma inteligente (verificando extensões ocultas)
         let ogType = 'image/jpeg';
-        if (ogImage.toLowerCase().includes('.png')) ogType = 'image/png';
-        if (ogImage.toLowerCase().includes('.webp')) ogType = 'image/webp';
-        
-        // 4. Limpa a descrição totalmente para não quebrar as tags HTML
         let cleanDesc = empresa.descricao ? empresa.descricao.substring(0, 160).replace(/"/g, '&quot;').replace(/\n/g, ' ').trim() : 'Descubra tudo sobre este local em São Thomé das Letras.';
     %>
     
-    <!-- Autorização Expressa para Robôs (Evita bloqueios 403) -->
     <meta name="robots" content="index, follow, max-image-preview:large">
-    
-    <!-- Meta Tags do Facebook/WhatsApp -->
     <meta property="og:title" content="<%= empresa.nome %> | Portal STL">
     <meta property="og:description" content="<%= cleanDesc %>">
     <meta property="og:url" content="https://portalsaothomedasletras.com.br/<%= empresa.slug %>">
-    <meta property="og:image" content="<%= ogImage %>">
+    <meta property="og:image" itemprop="image" content="<%= ogImage %>">
     <meta property="og:image:secure_url" content="<%= ogImage %>">
     <meta property="og:image:type" content="<%= ogType %>">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Capa de <%= empresa.nome %>">
     <meta property="og:type" content="website">
 
-    <!-- Meta Tags do Twitter (Plano B do WhatsApp Moderno) -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<%= empresa.nome %> | Portal STL">
     <meta name="twitter:description" content="<%= cleanDesc %>">
     <meta name="twitter:image" content="<%= ogImage %>">
 
-    <!-- SEO DINÂMICO -->
     <title><%= empresa.nome %> - Portal São Thomé das Letras</title>
     <meta name="description" content="<%= cleanDesc %>">
-    
-    <!-- 🚨 FAVICON 🚨 -->
     <link rel="icon" type="image/png" href="/uploads/favicon.png">
 
-    <!-- 🕵️‍♂️ GOOGLE ANALYTICS 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-BDTY71XR8Q"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -73,10 +61,8 @@
 </head>
 <body class="bg-slate-50 text-slate-900">
 
-    <!-- HEADER / NAV -->
     <nav class="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 shadow-sm transition-all duration-300">
         <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-            <!-- 🚨 A SUA NOVA LOGOMARCA 🚨 -->
             <a href="/" class="flex items-center">
                 <img src="/uploads/portallogomarca.png" alt="Portal STL" class="h-9 md:h-11 w-auto object-contain">
             </a>
@@ -84,7 +70,6 @@
                 <a href="/explorar" class="text-sm font-bold text-slate-600 hover:text-amber-600 transition flex items-center gap-1">
                     <i class="fas fa-search"></i> Explorar
                 </a>
-                <!-- 🚨 BOTÃO ANUNCIE PRETO 🚨 -->
                 <a href="/#anunciar" class="bg-slate-900 hover:bg-black text-white text-xs md:text-sm font-bold px-5 md:px-6 py-2 md:py-2.5 rounded-full transition shadow-sm whitespace-nowrap">
                     Anuncie
                 </a>
@@ -92,7 +77,6 @@
         </div>
     </nav>
 
-    <!-- BANNER PRINCIPAL / CAPA (FUNDO LIMPO E SEM TEXTO) -->
     <div class="relative w-full aspect-[16/9] md:aspect-[820/312] bg-slate-900 overflow-hidden flex justify-center items-center border-b border-slate-200">
         <% if(empresa.imagem) { %>
             <img src="<%= empresa.imagem %>" alt="<%= empresa.nome %>" class="w-full h-full object-contain">
@@ -103,10 +87,8 @@
         <% } %>
     </div>
 
-    <!-- CONTEÚDO -->
     <main class="max-w-6xl mx-auto px-4 py-8 md:py-10">
         
-        <!-- 🚨 BLOCO DE TÍTULO MUDADO PARA AQUI EM BAIXO 🚨 -->
         <div class="mb-8 border-b border-slate-200 pb-6">
             <div class="flex flex-wrap items-center gap-3 mb-3">
                 <span class="bg-amber-500 text-white text-xs font-extrabold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
@@ -123,10 +105,8 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
             
-            <!-- COLUNA ESQUERDA: INFO -->
             <div class="lg:col-span-2 space-y-8">
                 
-                <!-- Descrição -->
                 <section class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100">
                     <h2 class="text-xl font-extrabold mb-4 flex items-center gap-2">
                         <i class="fas fa-align-left text-amber-500"></i> Sobre
@@ -136,7 +116,6 @@
                     </p>
                 </section>
 
-                <!-- EXCLUSIVO PARA VITRINE PREMIUM OU SUPERIOR (plano_id >= 2) -->
                 <% if(empresa.plano_id >= 2 && empresa.galeria) { 
                     const imagens = JSON.parse(empresa.galeria); 
                     if(imagens.length > 0) { %>
@@ -144,7 +123,6 @@
                         <h2 class="text-xl font-extrabold mb-4 flex items-center gap-2">
                             <i class="fas fa-camera-retro text-amber-500"></i> Galeria de Fotos
                         </h2>
-                        <!-- Suporte para até 6 imagens em grid responsivo com função de clique -->
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                             <% imagens.slice(0, 6).forEach(img => { %>
                                 <div class="aspect-square rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md hover:scale-[1.02] transition duration-300 cursor-pointer" onclick="abrirLightbox('<%= img %>')">
@@ -155,14 +133,13 @@
                     </section>
                 <% } } %>
 
-                <!-- 🚨 VÍDEO CAMALEÃO (YouTube, FB, Insta, Vimeo) 🚨 -->
                 <% if(empresa.video_url) { 
                     let rawUrl = empresa.video_url.trim();
                     let finalUrl = rawUrl;
                     
                     if (rawUrl.includes('youtube.com/watch?v=')) {
                         finalUrl = rawUrl.replace('watch?v=', 'embed/');
-                        if(finalUrl.includes('&')) finalUrl = finalUrl.split('&')[0]; // Remove parâmetros extras
+                        if(finalUrl.includes('&')) finalUrl = finalUrl.split('&')[0];
                     } else if (rawUrl.includes('youtu.be/')) {
                         let yId = rawUrl.split('youtu.be/')[1].split('?')[0];
                         finalUrl = 'https://www.youtube.com/embed/' + yId;
@@ -178,7 +155,6 @@
                     }
                 %>
                     <section class="bg-slate-900 p-2 rounded-3xl overflow-hidden shadow-xl border border-slate-800">
-                        <!-- Fundo preto e centralização para acomodar vídeos verticais (Insta/Reels) sem distorcer -->
                         <div class="aspect-video rounded-2xl overflow-hidden bg-black flex justify-center items-center">
                             <iframe class="w-full h-full" src="<%= finalUrl %>" frameborder="0" scrolling="no" allowtransparency="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe>
                         </div>
@@ -187,7 +163,6 @@
 
             </div>
 
-            <!-- COLUNA DIREITA: SIDEBAR/CONTATO -->
             <div class="space-y-6">
                 
                 <div class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100">
@@ -196,7 +171,6 @@
                     </h3>
                     
                     <% 
-                        // 🚨 LÓGICA DE BLINDAGEM DE LINKS DO IAGO 🚨
                         function prepararLink(url, plataforma) {
                             if (!url) return '#';
                             let limpo = url.trim();
@@ -215,7 +189,6 @@
                     %>
 
                     <div class="space-y-4">
-                        <!-- WhatsApp Premium -->
                         <% if(empresa.whatsapp) { %>
                             <a href="https://wa.me/55<%= empresa.whatsapp.replace(/\D/g,'') %>?text=Ol%C3%A1!%20Vi%20o%20seu%20an%C3%BAncio%20no%20Portal%20STL." target="_blank" 
                                onclick="gtag('event', 'clique_whatsapp', { 'nome_empresa': '<%= empresa.nome %>', 'categoria': '<%= empresa.categoria_nome %>' }); registrarClique('<%= empresa.slug %>', 'whatsapp');"
@@ -224,7 +197,6 @@
                             </a>
                         <% } %>
 
-                        <!-- Redes Sociais: Insta & Facebook Lado a Lado -->
                         <div class="grid grid-cols-2 gap-3 mt-4">
                             <% if(empresa.instagram) { %>
                                 <a href="<%= prepararLink(empresa.instagram, 'instagram') %>" target="_blank" 
@@ -243,7 +215,6 @@
                             <% } %>
                         </div>
 
-                        <!-- Site Oficial -->
                         <% if(empresa.site) { %>
                             <a href="<%= prepararLink(empresa.site, 'site') %>" target="_blank" 
                                onclick="gtag('event', 'clique_site', { 'nome_empresa': '<%= empresa.nome %>' }); registrarClique('<%= empresa.slug %>', 'social');"
@@ -254,7 +225,6 @@
                     </div>
                 </div>
 
-                <!-- CARTÃO DE LOCALIZAÇÃO (MAPS DIFERENCIADO) -->
                 <% if(empresa.endereco || empresa.link_maps) { %>
                 <div class="bg-slate-900 rounded-3xl p-6 shadow-xl text-white relative overflow-hidden">
                     <i class="fas fa-map-marked-alt absolute -bottom-4 -right-4 text-7xl text-slate-800 opacity-50 -rotate-12"></i>
@@ -278,21 +248,17 @@
                 </div>
                 <% } %>
 
-                <!-- 🚨 CARTÃO DE COMPARTILHAMENTO (Boca a Boca Digital) 🚨 -->
                 <div class="bg-white rounded-3xl p-6 shadow-xl border border-slate-100 mt-6">
                     <h3 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2">
                         <i class="fas fa-share-nodes text-amber-500"></i> Compartilhar Local
                     </h3>
                     <div class="flex gap-3">
-                        <!-- WhatsApp -->
                         <button onclick="compartilharWhatsApp(); registrarClique('<%= empresa.slug %>', 'share');" class="flex-1 bg-[#25D366] hover:bg-[#1da851] text-white py-3.5 rounded-xl transition shadow-md flex items-center justify-center gap-2" title="Compartilhar no WhatsApp">
                             <i class="fab fa-whatsapp text-xl"></i>
                         </button>
-                        <!-- Facebook -->
                         <button onclick="compartilharFacebook(); registrarClique('<%= empresa.slug %>', 'share');" class="flex-1 bg-[#1877F2] hover:bg-[#166fe5] text-white py-3.5 rounded-xl transition shadow-md flex items-center justify-center gap-2" title="Compartilhar no Facebook">
                             <i class="fab fa-facebook-f text-xl"></i>
                         </button>
-                        <!-- Copiar Link -->
                         <button onclick="copiarLink(); registrarClique('<%= empresa.slug %>', 'share');" id="btnCopiar" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3.5 rounded-xl transition shadow-sm flex items-center justify-center gap-2" title="Copiar Link">
                             <i class="fas fa-link text-xl"></i>
                         </button>
@@ -310,15 +276,11 @@
         </div>
     </footer>
 
-    <!-- MODAL DO LIGHTBOX -->
     <div id="lightbox" class="fixed inset-0 z-[100] bg-black/95 hidden flex justify-center items-center p-4 backdrop-blur-sm transition-opacity" onclick="fecharLightbox()">
         <button class="absolute top-4 right-4 md:top-8 md:right-8 text-white hover:text-amber-500 text-4xl font-bold transition focus:outline-none" aria-label="Fechar">&times;</button>
         <img id="lightbox-img" src="" class="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl" onclick="event.stopPropagation()">
     </div>
 
-    <!-- ========================================== -->
-    <!-- 🍪 POP-UP LGPD (AVISO DE COOKIES)          -->
-    <!-- ========================================== -->
     <div id="lgpd-banner" class="fixed bottom-4 left-4 right-4 md:left-auto md:right-8 md:w-[400px] bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 z-[9999] transform translate-y-full opacity-0 transition-all duration-500 flex flex-col pointer-events-none">
         <div class="flex items-start gap-4">
             <div class="text-4xl">🍪</div>
@@ -339,7 +301,6 @@
         </div>
     </div>
 
-    <!-- SCRIPT GERAL -->
     <script>
         function abrirLightbox(src) {
             document.getElementById('lightbox-img').src = src;
@@ -356,7 +317,6 @@
             if(event.key === "Escape") fecharLightbox();
         });
 
-        // 🚨 FUNÇÕES MÁGICAS DE COMPARTILHAMENTO 🚨
         function compartilharWhatsApp() {
             const url = encodeURIComponent(window.location.href);
             const texto = encodeURIComponent(`Olha esse lugar incrível que encontrei no Portal STL: <%= empresa.nome %>\n\n`);
@@ -384,7 +344,6 @@
             }, 2000);
         }
 
-        // 🚨 LÓGICA DO LGPD 🚨
         document.addEventListener("DOMContentLoaded", function() {
             const banner = document.getElementById('lgpd-banner');
             const btnAceitar = document.getElementById('lgpd-aceitar');
@@ -408,7 +367,6 @@
             btnRecusar.addEventListener('click', () => fecharBanner('recusou'));
         });
 
-        // 📡 FUNÇÃO DE BI: ENVIA O CLIQUE PARA O PAINEL ADMIN
         function registrarClique(slug, tipo) {
             fetch(`/api/track/${slug}/${tipo}`, { method: 'POST' })
                 .catch(e => console.log('Erro ao rastrear clique no BI:', e));
